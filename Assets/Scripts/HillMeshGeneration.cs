@@ -1,0 +1,209 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+
+
+public struct MeshDataPoints
+{
+    public Vector3[] terrainPoints; // Array to store the center points of each square
+    public Vector3[] edgePoints; // Array to store the center points of each square
+
+    // Constructor to initialize the centerPoints array with the appropriate size
+    public MeshDataPoints(int xSize, int zSize)
+    {
+        terrainPoints = new Vector3[(xSize) * (zSize) - xSize*2];
+        edgePoints = new Vector3[(xSize) * 2];
+    }
+}
+
+
+
+// Ensure the presence of a MeshFilter component
+[RequireComponent(typeof(MeshFilter))]
+public class HillMeshGeneration : MonoBehaviour
+{
+    Mesh mesh; // The generated mesh
+    Vector3[] vertices; // Array to store the vertices of the mesh
+    public Vector3[] endVertices; // Store the end coordinates for the next mesh'
+    public MeshDataPoints meshDataPoints;
+    int[] triangles; // Array to store the triangle indices of the mesh
+    int xSize = 20; // Number of vertices along the x-axis
+    int zSize = 10; // Number of vertices along the z-axis
+    float maxSlope = 5.0f; // Maximum slope of the terrain
+    float noiseScale = 0.15f; // Scale of Perlin noise
+
+    // Define the SquareData struct to store square information
+
+    
+
+
+    // Called at the start of the script
+    void Start()
+    {
+        // Initialize the mesh and assign it to the MeshFilter component
+        mesh = new Mesh();
+        GetComponent<MeshFilter>().mesh = mesh;
+        noiseScale = Random.Range(0.1f, 0.15f);
+        meshDataPoints = new MeshDataPoints(xSize, zSize);
+        Debug.Log(meshDataPoints.terrainPoints.Length);
+
+    }
+
+
+    // Generate the shape of the terrain mesh
+    public void CreateShape()
+    {
+
+        vertices = new Vector3[(xSize + 1) * (zSize + 1)];
+        endVertices = new Vector3[zSize + 1];
+
+        // Iterate through each vertex and calculate its height using Perlin noise and slope
+        for (int i = 0, z = 0; z <= zSize; z++)
+        {
+            for (int x = 0; x <= xSize; x++)
+            {
+
+                //Calculate the height using Perlin noise and slope
+                float y = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * 2f;
+
+                //Set the vertex position in the array
+                vertices[i] = new Vector3(x, y, z);
+                if (x == xSize)
+                {
+                    endVertices[z] = vertices[i];
+                }
+                i++;
+            }
+            CreateTriangles();
+        }
+    }
+
+
+    // Generate the shape of the terrain mesh
+
+    public void CreateShapeAtLocation(Vector3[] startVertices)
+    {
+        vertices = new Vector3[(xSize + 1) * (zSize + 1)];
+        endVertices = new Vector3[zSize + 1];
+
+        // Iterate through each vertex and calculate its height using Perlin noise and slope
+        for (int i = 0, z = 0; z <= zSize; z++)
+        {
+            for (int x = (int)startVertices[0].x; x <= (int)startVertices[0].x+xSize; x++)
+            {
+                
+                // Calculate the height using Perlin noise and slope
+                float y = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * 2f;
+
+                // Set the vertex position in the array
+
+                if (x == (int)startVertices[0].x && startVertices != null && z < startVertices.Length)
+                {
+                    vertices[i] = startVertices[z];
+                }
+                else
+                {
+                    vertices[i] = new Vector3(x, y, z);
+                }
+
+                if (x == (int)startVertices[0].x + xSize)
+                    endVertices[z] = vertices[i];
+                
+                i++;
+            }
+        }
+        CreateTriangles();
+    }
+
+
+    void CreateTriangles()
+    {
+        triangles = new int[xSize * zSize * 6];
+        int vert = 0, tris = 0; // Variables to track vertex and triangle indices
+        // Generate triangles for the mesh to create the surface
+        for (int z = 0; z < zSize; z++)
+        {
+            for (int x = 0; x < xSize; x++)
+            {
+                // Define the triangles based on the vertex indices
+                triangles[tris + 0] = vert;  // BL
+                triangles[tris + 1] = vert + xSize + 1; //TL
+                triangles[tris + 2] = vert + 1; // BR
+                triangles[tris + 3] = vert + 1; // BR
+                triangles[tris + 4] = vert + xSize + 1; // TL
+                triangles[tris + 5] = vert + xSize + 2; //TR
+
+
+                Vector3 temp = (vertices[triangles[tris + 0]] + vertices[triangles[tris + 1]] + vertices[triangles[tris + 5]] + vertices[triangles[tris + 3]]) / 4f;
+                
+                if (z==0 || z== zSize-1 )
+                {
+                    int index = z == 0 ? x : xSize+x;
+                    meshDataPoints.edgePoints[index] = temp;
+                }
+                else
+                {
+                    int index = z > 1 ? xSize*z + x -xSize: x;
+                    meshDataPoints.terrainPoints[index] = temp;
+                }
+
+                // Update the vertex and triangle indices
+                vert++;
+                tris += 6;
+            }
+            
+            vert++;
+        }
+    }
+
+    // Update the mesh with the generated vertices and triangles
+    public void UpdateMesh()
+    {
+        // Check if the mesh has been initialized
+        if (mesh == null)
+        {
+            // Initialize the mesh and assign it to the MeshFilter component
+            mesh = new Mesh();
+            GetComponent<MeshFilter>().mesh = mesh;
+        }
+
+        // Clear the existing mesh data
+        mesh.Clear();
+
+        // Set the vertices and triangles of the mesh
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+
+        // Recalculate the normals for proper shading
+        mesh.RecalculateNormals();
+
+    }
+
+
+
+    // Calculate the slope at a given point and modify the height accordingly
+    float CalculateSlope(int x, int z)
+    {
+        float slope = (-maxSlope / xSize) * x;
+        return slope;
+    }
+    void OnDrawGizmos()
+    {
+        if (meshDataPoints.edgePoints != null)
+        {
+            Gizmos.color = Color.red;
+            for (int i = 0; i < meshDataPoints.edgePoints.Length; i++)
+            {
+                Gizmos.DrawSphere(meshDataPoints.edgePoints[i], 0.1f);
+            }
+
+            for (int i = 0; i < meshDataPoints.terrainPoints.Length; i++)
+            {
+                Gizmos.color = Color.blue;
+                Gizmos.DrawCube(meshDataPoints.terrainPoints[i], new Vector3(0.1f, 0.1f, 0.1f));
+            }
+        }
+    }
+
+}
