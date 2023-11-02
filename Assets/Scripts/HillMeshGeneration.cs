@@ -12,8 +12,10 @@ public struct MeshDataPoints
     // Constructor to initialize the centerPoints array with the appropriate size
     public MeshDataPoints(int xSize, int zSize)
     {
-        terrainPoints = new Vector3[(xSize) * (zSize) - xSize*2];
-        edgePoints = new Vector3[(xSize) * 2];
+        //terrainPoints = new Vector3[(xSize) * (zSize) - xSize*2];
+        terrainPoints = new Vector3[(xSize+1)*(zSize-1) + xSize*(zSize-2)]; // Coordinates of centers of squares + vertices for the terrain middle.
+        //edgePoints = new Vector3[(xSize) * 2];
+        edgePoints = new Vector3[(xSize+1) * 2 + xSize*2]; // Coordinates of centers of squares + vertices for the edges.
     }
 }
 
@@ -28,12 +30,12 @@ public class HillMeshGeneration : MonoBehaviour
     public Vector3[] endVertices; // Store the end coordinates for the next mesh'
     public MeshDataPoints meshDataPoints;
     int[] triangles; // Array to store the triangle indices of the mesh
-    int xSize = 20; // Number of vertices along the x-axis
-    int zSize = 10; // Number of vertices along the z-axis
+    int xSize = 10; // Number of vertices along the x-axis
+    int zSize = 5; // Number of vertices along the z-axis
     float maxSlope = 5.0f; // Maximum slope of the terrain
     float noiseScale = 0.15f; // Scale of Perlin noise
 
-    // Define the SquareData struct to store square information
+  
 
     
 
@@ -46,8 +48,6 @@ public class HillMeshGeneration : MonoBehaviour
         GetComponent<MeshFilter>().mesh = mesh;
         noiseScale = Random.Range(0.1f, 0.15f);
         meshDataPoints = new MeshDataPoints(xSize, zSize);
-        Debug.Log(meshDataPoints.terrainPoints.Length);
-
     }
 
 
@@ -57,6 +57,7 @@ public class HillMeshGeneration : MonoBehaviour
 
         vertices = new Vector3[(xSize + 1) * (zSize + 1)];
         endVertices = new Vector3[zSize + 1];
+        int index = 0;
 
         // Iterate through each vertex and calculate its height using Perlin noise and slope
         for (int i = 0, z = 0; z <= zSize; z++)
@@ -73,10 +74,30 @@ public class HillMeshGeneration : MonoBehaviour
                 {
                     endVertices[z] = vertices[i];
                 }
+                if (z==0)
+                {
+                    meshDataPoints.edgePoints[x] = vertices[i];
+                }
+                if (z==zSize)
+                {
+                    meshDataPoints.edgePoints[meshDataPoints.edgePoints.Length - xSize + x -1] = vertices[i];
+                }
+                
+                if (z!=0 && z!=zSize)
+                {
+
+                    meshDataPoints.terrainPoints[index + x] = vertices[i]; 
+                    if (x == xSize)
+                    {
+                        index += (xSize + 1) + xSize; 
+                    }
+                }
+                
                 i++;
-            }
-            CreateTriangles();
+                
+            }     
         }
+        CreateTriangles();
     }
 
 
@@ -86,6 +107,7 @@ public class HillMeshGeneration : MonoBehaviour
     {
         vertices = new Vector3[(xSize + 1) * (zSize + 1)];
         endVertices = new Vector3[zSize + 1];
+        int index = 0;
 
         // Iterate through each vertex and calculate its height using Perlin noise and slope
         for (int i = 0, z = 0; z <= zSize; z++)
@@ -93,10 +115,10 @@ public class HillMeshGeneration : MonoBehaviour
             for (int x = (int)startVertices[0].x; x <= (int)startVertices[0].x+xSize; x++)
             {
                 
-                // Calculate the height using Perlin noise and slope
+               
                 float y = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * 2f;
 
-                // Set the vertex position in the array
+               
 
                 if (x == (int)startVertices[0].x && startVertices != null && z < startVertices.Length)
                 {
@@ -108,8 +130,31 @@ public class HillMeshGeneration : MonoBehaviour
                 }
 
                 if (x == (int)startVertices[0].x + xSize)
+                {
                     endVertices[z] = vertices[i];
-                
+                }
+
+
+                if (z == 0)
+                {
+                    meshDataPoints.edgePoints[x - (int)startVertices[0].x] = vertices[i];
+                }
+                if (z == zSize)
+                {
+                    meshDataPoints.edgePoints[meshDataPoints.edgePoints.Length - ((int)startVertices[0].x + xSize) + x - 1] = vertices[i];
+                }
+
+                if (z != 0 && z != zSize)
+                {
+
+                    meshDataPoints.terrainPoints[index + (x - (int)startVertices[0].x)] = vertices[i];
+                    if (x == ((int)startVertices[0].x + xSize))
+                    {
+                        index += (xSize + 1) + xSize;
+                    }
+                }
+
+
                 i++;
             }
         }
@@ -119,6 +164,7 @@ public class HillMeshGeneration : MonoBehaviour
 
     void CreateTriangles()
     {
+        Debug.Log("\n");
         triangles = new int[xSize * zSize * 6];
         int vert = 0, tris = 0; // Variables to track vertex and triangle indices
         // Generate triangles for the mesh to create the surface
@@ -137,15 +183,14 @@ public class HillMeshGeneration : MonoBehaviour
 
                 Vector3 temp = (vertices[triangles[tris + 0]] + vertices[triangles[tris + 1]] + vertices[triangles[tris + 5]] + vertices[triangles[tris + 3]]) / 4f;
                 
-                if (z==0 || z== zSize-1 )
+                if (z==0 | z== zSize-1 )
                 {
-                    int index = z == 0 ? x : xSize+x;
+                    int index = z == 0 ? x+xSize+1 : x+xSize*2+1;
                     meshDataPoints.edgePoints[index] = temp;
                 }
                 else
                 {
-                    int index = z > 1 ? xSize*z + x -xSize: x;
-                    meshDataPoints.terrainPoints[index] = temp;
+                    meshDataPoints.terrainPoints[(xSize+1)*z +xSize*(z-1) + x] = temp; 
                 }
 
                 // Update the vertex and triangle indices
