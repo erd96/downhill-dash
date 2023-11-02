@@ -29,16 +29,17 @@ public class HillMeshGeneration : MonoBehaviour
     Vector3[] vertices; // Array to store the vertices of the mesh
     public Vector3[] endVertices; // Store the end coordinates for the next mesh'
     public MeshDataPoints meshDataPoints;
+    MeshCollider meshCollider;
+    GameObject meshTriggerInstantiate;
+    GameObject meshTriggerDestroy;
+    GameObject leftBoundsTrigger;
+    GameObject rightBoundsTrigger;
+    public List<GameObject> prefabs = new List<GameObject>(); 
     int[] triangles; // Array to store the triangle indices of the mesh
-    int xSize = 10; // Number of vertices along the x-axis
-    int zSize = 5; // Number of vertices along the z-axis
-    float maxSlope = 5.0f; // Maximum slope of the terrain
+    int xSize = 50; // Number of vertices along the x-axis
+    int zSize = 10; // Number of vertices along the z-axis
+    float maxSlope = 10.0f; // Maximum slope of the terrain
     float noiseScale = 0.15f; // Scale of Perlin noise
-
-  
-
-    
-
 
     // Called at the start of the script
     void Start()
@@ -48,6 +49,7 @@ public class HillMeshGeneration : MonoBehaviour
         GetComponent<MeshFilter>().mesh = mesh;
         noiseScale = Random.Range(0.1f, 0.15f);
         meshDataPoints = new MeshDataPoints(xSize, zSize);
+
     }
 
 
@@ -164,7 +166,6 @@ public class HillMeshGeneration : MonoBehaviour
 
     void CreateTriangles()
     {
-        Debug.Log("\n");
         triangles = new int[xSize * zSize * 6];
         int vert = 0, tris = 0; // Variables to track vertex and triangle indices
         // Generate triangles for the mesh to create the surface
@@ -223,6 +224,10 @@ public class HillMeshGeneration : MonoBehaviour
         // Recalculate the normals for proper shading
         mesh.RecalculateNormals();
 
+        // Add a mesh collider once the mesh is generated and updated.
+        meshCollider = gameObject.AddComponent<MeshCollider>();
+        meshCollider.sharedMesh = mesh;
+        CreateMeshTriggers();
     }
 
 
@@ -251,4 +256,43 @@ public class HillMeshGeneration : MonoBehaviour
         }
     }
 
+    void CreateMeshTriggers()
+    {
+
+        meshTriggerInstantiate = new GameObject();
+        meshTriggerDestroy = new GameObject();
+        leftBoundsTrigger = new GameObject();
+        rightBoundsTrigger = new GameObject();
+
+        meshTriggerInstantiate.transform.parent = this.transform;
+        meshTriggerDestroy.transform.parent = this.transform;
+        leftBoundsTrigger.transform.parent = this.transform;
+        rightBoundsTrigger.transform.parent = this.transform;
+
+        BoxCollider boxInstantiate =  meshTriggerInstantiate.AddComponent<BoxCollider>();
+        BoxCollider boxDestroy = meshTriggerDestroy.AddComponent<BoxCollider>();
+        BoxCollider leftBounds = leftBoundsTrigger.AddComponent<BoxCollider>();
+        BoxCollider rightBounds = rightBoundsTrigger.AddComponent<BoxCollider>();
+
+        boxInstantiate.size = new Vector3(0.5f, 5f, zSize);
+        boxDestroy.size = new Vector3(0.5f, 5f, zSize);
+        leftBounds.size = new Vector3(xSize, 10f, 0.5f);
+        rightBounds.size = new Vector3(xSize, 10f, 0.5f);
+
+        boxInstantiate.center = new Vector3(0f, 2f, 0f);
+        boxDestroy.center = new Vector3(0f, 2f, 0f);
+        leftBounds.center = new Vector3(0f, 2f, 0f);
+        rightBounds.center = new Vector3(0f, 2f, 0f);
+
+
+        boxInstantiate.transform.position = mesh.bounds.center;
+        boxDestroy.transform.position = new Vector3(mesh.bounds.center.x - mesh.bounds.extents.x +xSize/20, mesh.bounds.extents.y + mesh.bounds.center.y -1, mesh.bounds.center.z);
+        leftBounds.transform.position = new Vector3(mesh.bounds.center.x, -mesh.bounds.extents.y, mesh.bounds.center.z + mesh.bounds.extents.z);
+        rightBounds.transform.position = new Vector3(mesh.bounds.center.x, -mesh.bounds.extents.y, mesh.bounds.center.z - mesh.bounds.extents.z);
+
+        boxInstantiate.isTrigger = true;
+        boxDestroy.isTrigger = true;
+        leftBounds.isTrigger = true;
+        rightBounds.isTrigger = true;
+    }
 }

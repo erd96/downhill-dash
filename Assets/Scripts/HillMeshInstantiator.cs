@@ -5,6 +5,7 @@ using UnityEngine;
 public class HillMeshInstantiator : MonoBehaviour
 {
     public GameObject prefab; // Reference to the prefab to be instantiated
+    public GameObject[] treePrefabs;
     private GameObject lastInstantiatedPrefab;
     private Vector3[] startVertices; // Store the start vertices of the current mesh
 
@@ -41,6 +42,11 @@ public class HillMeshInstantiator : MonoBehaviour
             }
             
         }
+
+        if (Input.GetKeyDown(KeyCode.Delete))
+        {
+            Destroy(lastInstantiatedPrefab);
+        }
     }
 
     IEnumerator GenerateMesh(HillMeshGeneration script)
@@ -66,6 +72,21 @@ public class HillMeshInstantiator : MonoBehaviour
         // Set the last instantiated prefab
         lastInstantiatedPrefab = script.gameObject;
         startVertices = script.endVertices;
+        InstantiateEdgePrefabs(script);
 
     }
+
+
+    void InstantiateEdgePrefabs(HillMeshGeneration script)
+    {
+        for (int i = 0; i < script.meshDataPoints.edgePoints.Length; i++)
+        {
+            int randTree = Random.Range(0, treePrefabs.Length);
+            GameObject tree = Instantiate(treePrefabs[randTree], script.meshDataPoints.edgePoints[i], Quaternion.identity);
+            tree.transform.parent = script.transform;
+            script.prefabs.Add(tree);
+        }
+
+    }
+
 }
