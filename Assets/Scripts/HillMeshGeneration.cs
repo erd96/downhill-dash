@@ -30,10 +30,10 @@ public class HillMeshGeneration : MonoBehaviour
     public Vector3[] endVertices; // Store the end coordinates for the next mesh'
     public MeshDataPoints meshDataPoints;
     MeshCollider meshCollider;
-    GameObject meshTriggerInstantiate;
-    GameObject meshTriggerDestroy;
-    GameObject leftBoundsTrigger;
-    GameObject rightBoundsTrigger;
+    public GameObject meshTriggerInstantiate;
+    public GameObject meshTriggerDestroy;
+    public GameObject leftBoundsTrigger;
+    public GameObject rightBoundsTrigger;
     public List<GameObject> prefabs = new List<GameObject>(); 
     int[] triangles; // Array to store the triangle indices of the mesh
     int xSize = 50; // Number of vertices along the x-axis
@@ -276,8 +276,8 @@ public class HillMeshGeneration : MonoBehaviour
 
         boxInstantiate.size = new Vector3(0.5f, 5f, zSize);
         boxDestroy.size = new Vector3(0.5f, 5f, zSize);
-        leftBounds.size = new Vector3(xSize, 10f, 0.5f);
-        rightBounds.size = new Vector3(xSize, 10f, 0.5f);
+        leftBounds.size = new Vector3(xSize, 15f, 0.5f);
+        rightBounds.size = new Vector3(xSize, 15f, 0.5f);
 
         boxInstantiate.center = new Vector3(0f, 2f, 0f);
         boxDestroy.center = new Vector3(0f, 2f, 0f);
@@ -287,12 +287,18 @@ public class HillMeshGeneration : MonoBehaviour
 
         boxInstantiate.transform.position = mesh.bounds.center;
         boxDestroy.transform.position = new Vector3(mesh.bounds.center.x - mesh.bounds.extents.x +xSize/20, mesh.bounds.extents.y + mesh.bounds.center.y -1, mesh.bounds.center.z);
-        leftBounds.transform.position = new Vector3(mesh.bounds.center.x, -mesh.bounds.extents.y, mesh.bounds.center.z + mesh.bounds.extents.z);
-        rightBounds.transform.position = new Vector3(mesh.bounds.center.x, -mesh.bounds.extents.y, mesh.bounds.center.z - mesh.bounds.extents.z);
+        leftBounds.transform.position = new Vector3(mesh.bounds.center.x, mesh.bounds.center.y, mesh.bounds.center.z + mesh.bounds.extents.z);
+        rightBounds.transform.position = new Vector3(mesh.bounds.center.x, mesh.bounds.center.y, mesh.bounds.center.z - mesh.bounds.extents.z);
 
         boxInstantiate.isTrigger = true;
         boxDestroy.isTrigger = true;
         leftBounds.isTrigger = true;
         rightBounds.isTrigger = true;
+
+        // Add collider triggers to the specific GameObjects
+        meshTriggerInstantiate.AddComponent<TriggerEventHandler>().gameObject.name = "meshTriggerInstantiate";
+        meshTriggerDestroy.AddComponent<TriggerEventHandler>().gameObject.name = "meshTriggerDestroy";
+        leftBoundsTrigger.AddComponent<TriggerEventHandler>().gameObject.name = "leftBoundsTrigger";
+        rightBoundsTrigger.AddComponent<TriggerEventHandler>().gameObject.name = "rightBoundsTrigger";
     }
 }
