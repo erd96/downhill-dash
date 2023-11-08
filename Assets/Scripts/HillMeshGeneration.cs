@@ -13,9 +13,9 @@ public struct MeshDataPoints
     public MeshDataPoints(int xSize, int zSize)
     {
         //terrainPoints = new Vector3[(xSize) * (zSize) - xSize*2];
-        terrainPoints = new Vector3[(xSize+1)*(zSize-1) + xSize*(zSize-2)]; // Coordinates of centers of squares + vertices for the terrain middle.
+        terrainPoints = new Vector3[(xSize + 1) * (zSize - 1) + xSize * (zSize - 2)]; // Coordinates of centers of squares + vertices for the terrain middle.
         //edgePoints = new Vector3[(xSize) * 2];
-        edgePoints = new Vector3[(xSize+1) * 2 + xSize*2]; // Coordinates of centers of squares + vertices for the edges.
+        edgePoints = new Vector3[(xSize + 1) * 2 + xSize * 2]; // Coordinates of centers of squares + vertices for the edges.
     }
 }
 
@@ -34,7 +34,7 @@ public class HillMeshGeneration : MonoBehaviour
     public GameObject meshTriggerDestroy;
     public GameObject leftBoundsTrigger;
     public GameObject rightBoundsTrigger;
-    public List<GameObject> prefabs = new List<GameObject>(); 
+    public List<GameObject> prefabs = new List<GameObject>();
     int[] triangles; // Array to store the triangle indices of the mesh
     int xSize = 50; // Number of vertices along the x-axis
     int zSize = 10; // Number of vertices along the z-axis
@@ -76,28 +76,28 @@ public class HillMeshGeneration : MonoBehaviour
                 {
                     endVertices[z] = vertices[i];
                 }
-                if (z==0)
+                if (z == 0)
                 {
                     meshDataPoints.edgePoints[x] = vertices[i];
                 }
-                if (z==zSize)
+                if (z == zSize)
                 {
-                    meshDataPoints.edgePoints[meshDataPoints.edgePoints.Length - xSize + x -1] = vertices[i];
+                    meshDataPoints.edgePoints[meshDataPoints.edgePoints.Length - xSize + x - 1] = vertices[i];
                 }
-                
-                if (z!=0 && z!=zSize)
+
+                if (z != 0 && z != zSize)
                 {
 
-                    meshDataPoints.terrainPoints[index + x] = vertices[i]; 
+                    meshDataPoints.terrainPoints[index + x] = vertices[i];
                     if (x == xSize)
                     {
-                        index += (xSize + 1) + xSize; 
+                        index += (xSize + 1) + xSize;
                     }
                 }
-                
+
                 i++;
-                
-            }     
+
+            }
         }
         CreateTriangles();
     }
@@ -114,13 +114,13 @@ public class HillMeshGeneration : MonoBehaviour
         // Iterate through each vertex and calculate its height using Perlin noise and slope
         for (int i = 0, z = 0; z <= zSize; z++)
         {
-            for (int x = (int)startVertices[0].x; x <= (int)startVertices[0].x+xSize; x++)
+            for (int x = (int)startVertices[0].x; x <= (int)startVertices[0].x + xSize; x++)
             {
-                
-               
+
+
                 float y = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * 2f;
 
-               
+
 
                 if (x == (int)startVertices[0].x && startVertices != null && z < startVertices.Length)
                 {
@@ -183,22 +183,22 @@ public class HillMeshGeneration : MonoBehaviour
 
 
                 Vector3 temp = (vertices[triangles[tris + 0]] + vertices[triangles[tris + 1]] + vertices[triangles[tris + 5]] + vertices[triangles[tris + 3]]) / 4f;
-                
-                if (z==0 | z== zSize-1 )
+
+                if (z == 0 | z == zSize - 1)
                 {
-                    int index = z == 0 ? x+xSize+1 : x+xSize*2+1;
+                    int index = z == 0 ? x + xSize + 1 : x + xSize * 2 + 1;
                     meshDataPoints.edgePoints[index] = temp;
                 }
                 else
                 {
-                    meshDataPoints.terrainPoints[(xSize+1)*z +xSize*(z-1) + x] = temp; 
+                    meshDataPoints.terrainPoints[(xSize + 1) * z + xSize * (z - 1) + x] = temp;
                 }
 
                 // Update the vertex and triangle indices
                 vert++;
                 tris += 6;
             }
-            
+
             vert++;
         }
     }
@@ -228,6 +228,7 @@ public class HillMeshGeneration : MonoBehaviour
         meshCollider = gameObject.AddComponent<MeshCollider>();
         meshCollider.sharedMesh = mesh;
         CreateMeshTriggers();
+        gameObject.layer = LayerMask.NameToLayer("Ground");
     }
 
 
@@ -238,23 +239,23 @@ public class HillMeshGeneration : MonoBehaviour
         float slope = (-maxSlope / xSize) * x;
         return slope;
     }
-    void OnDrawGizmos()
-    {
-        if (meshDataPoints.edgePoints != null)
-        {
-            Gizmos.color = Color.red;
-            for (int i = 0; i < meshDataPoints.edgePoints.Length; i++)
-            {
-                Gizmos.DrawSphere(meshDataPoints.edgePoints[i], 0.1f);
-            }
+    //void OnDrawGizmos()
+    //{
+    //    if (meshDataPoints.edgePoints != null)
+    //    {
+    //        Gizmos.color = Color.red;
+    //        for (int i = 0; i < meshDataPoints.edgePoints.Length; i++)
+    //        {
+    //            Gizmos.DrawSphere(meshDataPoints.edgePoints[i], 0.1f);
+    //        }
 
-            for (int i = 0; i < meshDataPoints.terrainPoints.Length; i++)
-            {
-                Gizmos.color = Color.blue;
-                Gizmos.DrawCube(meshDataPoints.terrainPoints[i], new Vector3(0.1f, 0.1f, 0.1f));
-            }
-        }
-    }
+    //        for (int i = 0; i < meshDataPoints.terrainPoints.Length; i++)
+    //        {
+    //            Gizmos.color = Color.blue;
+    //            Gizmos.DrawCube(meshDataPoints.terrainPoints[i], new Vector3(0.1f, 0.1f, 0.1f));
+    //        }
+    //    }
+    //}
 
     void CreateMeshTriggers()
     {
@@ -269,7 +270,7 @@ public class HillMeshGeneration : MonoBehaviour
         leftBoundsTrigger.transform.parent = this.transform;
         rightBoundsTrigger.transform.parent = this.transform;
 
-        BoxCollider boxInstantiate =  meshTriggerInstantiate.AddComponent<BoxCollider>();
+        BoxCollider boxInstantiate = meshTriggerInstantiate.AddComponent<BoxCollider>();
         BoxCollider boxDestroy = meshTriggerDestroy.AddComponent<BoxCollider>();
         BoxCollider leftBounds = leftBoundsTrigger.AddComponent<BoxCollider>();
         BoxCollider rightBounds = rightBoundsTrigger.AddComponent<BoxCollider>();
@@ -286,7 +287,7 @@ public class HillMeshGeneration : MonoBehaviour
 
 
         boxInstantiate.transform.position = mesh.bounds.center;
-        boxDestroy.transform.position = new Vector3(mesh.bounds.center.x - mesh.bounds.extents.x +xSize/20, mesh.bounds.extents.y + mesh.bounds.center.y -1, mesh.bounds.center.z);
+        boxDestroy.transform.position = new Vector3(mesh.bounds.center.x - mesh.bounds.extents.x + xSize / 20, mesh.bounds.extents.y + mesh.bounds.center.y - 1, mesh.bounds.center.z);
         leftBounds.transform.position = new Vector3(mesh.bounds.center.x, mesh.bounds.center.y, mesh.bounds.center.z + mesh.bounds.extents.z);
         rightBounds.transform.position = new Vector3(mesh.bounds.center.x, mesh.bounds.center.y, mesh.bounds.center.z - mesh.bounds.extents.z);
 
@@ -302,3 +303,5 @@ public class HillMeshGeneration : MonoBehaviour
         rightBoundsTrigger.AddComponent<TriggerEventHandler>().gameObject.name = "rightBoundsTrigger";
     }
 }
+
+
