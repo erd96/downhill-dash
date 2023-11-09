@@ -27,6 +27,7 @@ public class HillMeshGeneration : MonoBehaviour
 {
     Mesh mesh; // The generated mesh
     Vector3[] vertices; // Array to store the vertices of the mesh
+    Vector2[] uvs;
     public Vector3[] endVertices; // Store the end coordinates for the next mesh'
     public MeshDataPoints meshDataPoints;
     MeshCollider meshCollider;
@@ -100,6 +101,7 @@ public class HillMeshGeneration : MonoBehaviour
             }
         }
         CreateTriangles();
+        CreateUVs(vertices.Length);
     }
 
 
@@ -161,8 +163,23 @@ public class HillMeshGeneration : MonoBehaviour
             }
         }
         CreateTriangles();
+        CreateUVs(vertices.Length);
+
     }
 
+    void CreateUVs(int length)
+    {
+        uvs = new Vector2[length];
+
+        for (int i = 0, z=0; z <= zSize; z++)
+        {
+            for (int x = 0; x <= xSize; x++)
+            {
+                uvs[i] = new Vector2((float)x / xSize, (float)z / zSize);
+                i++;
+            }
+        }
+    }
 
     void CreateTriangles()
     {
@@ -220,6 +237,7 @@ public class HillMeshGeneration : MonoBehaviour
         // Set the vertices and triangles of the mesh
         mesh.vertices = vertices;
         mesh.triangles = triangles;
+        mesh.uv = uvs;
 
         // Recalculate the normals for proper shading
         mesh.RecalculateNormals();

@@ -53,7 +53,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef8325a5a9b7e8746af833de22978f2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EndVertices: []
+  endVertices: []
+  meshTriggerInstantiate: {fileID: 0}
+  meshTriggerDestroy: {fileID: 0}
+  leftBoundsTrigger: {fileID: 0}
+  rightBoundsTrigger: {fileID: 0}
+  prefabs: []
 --- !u!23 &4146801577827812197
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -73,7 +78,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: efa33517c323be146995634b980bec0a, type: 2}
+  - {fileID: 2100000, guid: eff9bd1fc3971e7499e63b512110dfef, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
