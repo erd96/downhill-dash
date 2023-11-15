@@ -9,12 +9,9 @@ public struct MeshDataPoints
     public Vector3[] terrainPoints; // Array to store the center points of each square
     public Vector3[] edgePoints; // Array to store the center points of each square
 
-    // Constructor to initialize the centerPoints array with the appropriate size
     public MeshDataPoints(int xSize, int zSize)
     {
-        //terrainPoints = new Vector3[(xSize) * (zSize) - xSize*2];
         terrainPoints = new Vector3[(xSize + 1) * (zSize - 1) + xSize * (zSize - 2)]; // Coordinates of centers of squares + vertices for the terrain middle.
-        //edgePoints = new Vector3[(xSize) * 2];
         edgePoints = new Vector3[(xSize + 1) * 2 + xSize * 2]; // Coordinates of centers of squares + vertices for the edges.
     }
 }
@@ -39,13 +36,17 @@ public class HillMeshGeneration : MonoBehaviour
     int[] triangles; // Array to store the triangle indices of the mesh
     int xSize = 50; // Number of vertices along the x-axis
     int zSize = 10; // Number of vertices along the z-axis
-    float maxSlope = 10.0f; // Maximum slope of the terrain
-    float noiseScale = 0.15f; // Scale of Perlin noise
+
+
+    float noiseScale = 1f; // Increase the scale for larger, smoother features
+    float maxSlope;    // Reduce the maximum slope for flatter terrain
+    float noiseAmplitude = .8f; // Adjust the amplitude of the Perlin noise
 
     // Called at the start of the script
     void Start()
     {
         // Initialize the mesh and assign it to the MeshFilter component
+        maxSlope = GameManager.Instance.maxSlope;
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
         noiseScale = Random.Range(0.1f, 0.15f);
@@ -69,7 +70,7 @@ public class HillMeshGeneration : MonoBehaviour
             {
 
                 //Calculate the height using Perlin noise and slope
-                float y = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * 2f;
+                float y = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * noiseAmplitude;
 
                 //Set the vertex position in the array
                 vertices[i] = new Vector3(x, y, z);
@@ -105,7 +106,6 @@ public class HillMeshGeneration : MonoBehaviour
     }
 
 
-    // Generate the shape of the terrain mesh
 
     public void CreateShapeAtLocation(Vector3[] startVertices)
     {
@@ -120,7 +120,7 @@ public class HillMeshGeneration : MonoBehaviour
             {
 
 
-                float y = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * 2f;
+                float y = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * noiseAmplitude;
 
 
 
