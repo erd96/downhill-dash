@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour
     private float currentMovement = 0.5f;
     private float targetMovement = 0.5f;
     private float movementChangeSpeed = 1f;
+    private int jumpAnim;
     [SerializeField] private float rotationSpeed = 50f; 
     private Vector3 velocity;
 
@@ -23,11 +24,14 @@ public class PlayerController : MonoBehaviour
     {
         characterController = GetComponent<CharacterController>();
         animator = GetComponentInChildren<Animator>();
+        playerSpeed = GameManager.Instance.playerSpeed;
     }
 
     void Update()
     {
+        GameManager.Instance.playerSpeed += 0.02f * Time.deltaTime;
         playerSpeed = GameManager.Instance.playerSpeed;
+        
 
         if (characterController.isGrounded)
         {
@@ -96,9 +100,11 @@ public class PlayerController : MonoBehaviour
 
     void Jump()
     {
+        jumpAnim = Random.Range(1, 3);
+
         if (!isJumping)
         {
-            animator.SetBool("IsJumping", true);
+            animator.SetBool($"IsJumping{jumpAnim}", true);
             isJumping = true;
             velocity.y = Mathf.Sqrt(jumpHeight * -2 * Physics.gravity.y);
         }
@@ -109,7 +115,7 @@ public class PlayerController : MonoBehaviour
     {
         if (isJumping && characterController.isGrounded)
         {
-            animator.SetBool("IsJumping", false);
+            animator.SetBool($"IsJumping{jumpAnim}", false);
             isJumping = false;
         }
     }

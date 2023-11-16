@@ -9,8 +9,8 @@ public class GameManager : MonoBehaviour
     public GameState State;
     public static event Action<GameState> OnGameStateChange; // Event for GameState change 
 
-    public float playerSpeed = 6f;
-    public float maxSlope = 10f;
+    public float playerSpeed = 4f;
+    public float maxSlope = 30f;
     private void Awake()
     {
         Instance = this; // Singleton

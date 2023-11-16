@@ -19,8 +19,6 @@ public class TriggerEventHandler : MonoBehaviour
         {
             if (gameObject.name == "meshTriggerInstantiate")
             {
-                GameManager.Instance.playerSpeed+=0.5f;
-                GameManager.Instance.maxSlope += 0.05f;
                 meshInstantiator.OnMeshTriggerInstantiate();
             }
             else if (gameObject.name == "meshTriggerDestroy")

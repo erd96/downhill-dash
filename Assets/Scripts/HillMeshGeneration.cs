@@ -7,12 +7,17 @@ using UnityEngine;
 public struct MeshDataPoints
 {
     public Vector3[] terrainPoints; // Array to store the center points of each square
-    public Vector3[] edgePoints; // Array to store the center points of each square
+    public List<Vector3> edgePoints; // Array to store the center points of each square
+    public List<Vector3> fencePointsLeft;
+    public List<Vector3> fencePointsRight;
 
     public MeshDataPoints(int xSize, int zSize)
     {
         terrainPoints = new Vector3[(xSize + 1) * (zSize - 1) + xSize * (zSize - 2)]; // Coordinates of centers of squares + vertices for the terrain middle.
-        edgePoints = new Vector3[(xSize + 1) * 2 + xSize * 2]; // Coordinates of centers of squares + vertices for the edges.
+        //edgePoints = new Vector3[(xSize + 1) * 2 + xSize * 2]; // Coordinates of centers of squares + vertices for the edges.
+        edgePoints = new List<Vector3>();
+        fencePointsLeft = new List<Vector3>();
+        fencePointsRight = new List<Vector3>();
     }
 }
 
@@ -80,11 +85,11 @@ public class HillMeshGeneration : MonoBehaviour
                 }
                 if (z == 0)
                 {
-                    meshDataPoints.edgePoints[x] = vertices[i];
+                    meshDataPoints.edgePoints.Add(vertices[i]);
                 }
                 if (z == zSize)
                 {
-                    meshDataPoints.edgePoints[meshDataPoints.edgePoints.Length - xSize + x - 1] = vertices[i];
+                    meshDataPoints.edgePoints.Add(vertices[i]);
                 }
 
                 if (z != 0 && z != zSize)
@@ -120,7 +125,13 @@ public class HillMeshGeneration : MonoBehaviour
             {
 
 
-                float y = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * noiseAmplitude;
+                // Calculate the height using blended Perlin noise and slope
+                float oldY = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * noiseAmplitude;
+                float newY = CalculateSlope(x, z) + Mathf.PerlinNoise((x + xSize) * noiseScale, (z + zSize) * noiseScale) * noiseAmplitude;
+
+                // Interpolate between old and new heights based on the progress of the transition
+                float t = (float)(x - (int)startVertices[0].x) / (float)xSize;
+                float y = Mathf.Lerp(oldY, newY, t);
 
 
 
@@ -141,11 +152,11 @@ public class HillMeshGeneration : MonoBehaviour
 
                 if (z == 0)
                 {
-                    meshDataPoints.edgePoints[x - (int)startVertices[0].x] = vertices[i];
+                    meshDataPoints.edgePoints.Add(vertices[i]);
                 }
                 if (z == zSize)
                 {
-                    meshDataPoints.edgePoints[meshDataPoints.edgePoints.Length - ((int)startVertices[0].x + xSize) + x - 1] = vertices[i];
+                    meshDataPoints.edgePoints.Add(vertices[i]);
                 }
 
                 if (z != 0 && z != zSize)
@@ -204,7 +215,15 @@ public class HillMeshGeneration : MonoBehaviour
                 if (z == 0 | z == zSize - 1)
                 {
                     int index = z == 0 ? x + xSize + 1 : x + xSize * 2 + 1;
-                    meshDataPoints.edgePoints[index] = temp;
+
+                    if (z == 0)
+                    {
+                        meshDataPoints.fencePointsRight.Add(temp);
+                    }  
+                    else
+                    {
+                        meshDataPoints.fencePointsLeft.Add(temp);
+                    }
                 }
                 else
                 {
@@ -261,12 +280,25 @@ public class HillMeshGeneration : MonoBehaviour
     //{
     //    if (meshDataPoints.edgePoints != null)
     //    {
-    //        Gizmos.color = Color.red;
-    //        for (int i = 0; i < meshDataPoints.edgePoints.Length; i++)
+            
+    //        for (int i = 0; i < meshDataPoints.edgePoints.Count; i++)
     //        {
+    //            Gizmos.color = Color.red;
     //            Gizmos.DrawSphere(meshDataPoints.edgePoints[i], 0.1f);
     //        }
 
+    //        for (int i = 0; i < meshDataPoints.fencePointsLeft.Count; i++)
+    //        {
+    //            Gizmos.color = Color.cyan;
+    //            Gizmos.DrawSphere(meshDataPoints.fencePointsLeft[i], 0.1f);
+    //        }
+
+    //        for (int i = 0; i < meshDataPoints.fencePointsRight.Count; i++)
+    //        {
+    //            Gizmos.color = Color.magenta;
+    //            Gizmos.DrawSphere(meshDataPoints.fencePointsRight[i], 0.1f);
+
+    //        }
     //        for (int i = 0; i < meshDataPoints.terrainPoints.Length; i++)
     //        {
     //            Gizmos.color = Color.blue;
