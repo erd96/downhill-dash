@@ -36,6 +36,7 @@ public class PlayerController : MonoBehaviour
         if (characterController.isGrounded)
         {
             HandleMovementInput();
+            AlignToGround();
 
             if (Input.GetKeyDown(KeyCode.Space))
             {
@@ -96,6 +97,16 @@ public class PlayerController : MonoBehaviour
         }
         currentMovement = Mathf.MoveTowards(currentMovement, targetMovement, movementChangeSpeed * Time.deltaTime);
         animator.SetFloat("Movement", currentMovement);
+    }
+
+    void AlignToGround()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.5f))
+        {
+            Vector3 forwardDirection = Vector3.Cross(hit.normal, -transform.right);
+            transform.rotation = Quaternion.LookRotation(forwardDirection, hit.normal);
+        }
     }
 
     void Jump()

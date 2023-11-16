@@ -50,7 +50,6 @@ public class HillMeshGeneration : MonoBehaviour
     // Called at the start of the script
     void Start()
     {
-        // Initialize the mesh and assign it to the MeshFilter component
         maxSlope = GameManager.Instance.maxSlope;
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
@@ -132,8 +131,6 @@ public class HillMeshGeneration : MonoBehaviour
                 // Interpolate between old and new heights based on the progress of the transition
                 float t = (float)(x - (int)startVertices[0].x) / (float)xSize;
                 float y = Mathf.Lerp(oldY, newY, t);
-
-
 
                 if (x == (int)startVertices[0].x && startVertices != null && z < startVertices.Length)
                 {

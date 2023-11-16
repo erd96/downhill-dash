@@ -73,24 +73,42 @@ public class HillMeshInstantiator : MonoBehaviour
             script.prefabs.Add(tree);
         }
 
-        for (int j = 0; j < script.meshDataPoints.fencePointsLeft.Count-1; j++)
+        for (int j = 0; j < script.meshDataPoints.fencePointsLeft.Count; j++)
         {
             int randRightFence = Random.Range(0, fencePrefabs.Length);
             int randLeftFence = Random.Range(0, fencePrefabs.Length);
-            Vector3 rPos = (script.meshDataPoints.fencePointsRight[j] + script.meshDataPoints.fencePointsRight[j + 1]) / 2f;
-            Vector3 lPos = (script.meshDataPoints.fencePointsLeft[j] + script.meshDataPoints.fencePointsLeft[j + 1]) / 2f;
 
-            float rAngle = Mathf.Atan2(script.meshDataPoints.fencePointsRight[j + 1].y - script.meshDataPoints.fencePointsRight[j].y, script.meshDataPoints.fencePointsRight[j + 1].x - script.meshDataPoints.fencePointsRight[j].x) * Mathf.Rad2Deg;
-            float lAngle = Mathf.Atan2(script.meshDataPoints.fencePointsLeft[j + 1].y - script.meshDataPoints.fencePointsLeft[j].y, script.meshDataPoints.fencePointsLeft[j + 1].x - script.meshDataPoints.fencePointsLeft[j].x) * Mathf.Rad2Deg;
+            if (j == script.meshDataPoints.fencePointsLeft.Count-1)
+            {
+                Vector3 rPos = new Vector3(script.meshDataPoints.fencePointsRight[j].x + 0.5f, script.meshDataPoints.fencePointsRight[j].y, script.meshDataPoints.fencePointsRight[j].z);
+                Vector3 lPos = new Vector3(script.meshDataPoints.fencePointsLeft[j].x + 0.5f, script.meshDataPoints.fencePointsLeft[j].y, script.meshDataPoints.fencePointsLeft[j].z);
 
-            GameObject rFence = Instantiate(fencePrefabs[randRightFence], rPos, Quaternion.Euler(0f, 0f, rAngle));
-            GameObject lFence = Instantiate(fencePrefabs[randLeftFence], lPos, Quaternion.Euler(0f, 0f, lAngle));
+                GameObject rFence = Instantiate(fencePrefabs[randRightFence], rPos, Quaternion.identity);
+                GameObject lFence = Instantiate(fencePrefabs[randLeftFence], lPos, Quaternion.identity);
 
-            rFence.transform.parent = script.transform;
-            lFence.transform.parent = script.transform;
+                rFence.transform.parent = script.transform;
+                lFence.transform.parent = script.transform;
 
-            script.prefabs.Add(rFence);
-            script.prefabs.Add(lFence);
+                script.prefabs.Add(rFence);
+                script.prefabs.Add(lFence);
+            }
+            else
+            {
+                Vector3 rPos = (script.meshDataPoints.fencePointsRight[j] + script.meshDataPoints.fencePointsRight[j + 1]) / 2f;
+                Vector3 lPos = (script.meshDataPoints.fencePointsLeft[j] + script.meshDataPoints.fencePointsLeft[j + 1]) / 2f;
+
+                float rAngle = Mathf.Atan2(script.meshDataPoints.fencePointsRight[j + 1].y - script.meshDataPoints.fencePointsRight[j].y, script.meshDataPoints.fencePointsRight[j + 1].x - script.meshDataPoints.fencePointsRight[j].x) * Mathf.Rad2Deg;
+                float lAngle = Mathf.Atan2(script.meshDataPoints.fencePointsLeft[j + 1].y - script.meshDataPoints.fencePointsLeft[j].y, script.meshDataPoints.fencePointsLeft[j + 1].x - script.meshDataPoints.fencePointsLeft[j].x) * Mathf.Rad2Deg;
+
+                GameObject rFence = Instantiate(fencePrefabs[randRightFence], rPos, Quaternion.Euler(0f, 0f, rAngle));
+                GameObject lFence = Instantiate(fencePrefabs[randLeftFence], lPos, Quaternion.Euler(0f, 0f, lAngle));
+
+                rFence.transform.parent = script.transform;
+                lFence.transform.parent = script.transform;
+
+                script.prefabs.Add(rFence);
+                script.prefabs.Add(lFence);
+            }
         }
 
     }
