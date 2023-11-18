@@ -13,29 +13,22 @@ public class TriggerEventHandler : MonoBehaviour
         meshInstantiator = GameObject.Find("HMInstantiator").GetComponent<HillMeshInstantiator>();
     }
 
+
     private void OnTriggerEnter(Collider other)
     {
         if (!isTriggerHandled)
         {
             if (gameObject.name == "meshTriggerInstantiate")
             {
-                ObstacleManager.Instance.obstacleDensity ++;
-                meshInstantiator.OnMeshTriggerInstantiate();
-            }
-            else if (gameObject.name == "meshTriggerDestroy")
-            {
-                meshInstantiator.OnMeshTriggerDestroy();
-            }
-            else if (gameObject.name == "leftBoundsTrigger" || gameObject.name == "rightBoundsTrigger")
-            {
-                meshInstantiator.OnBoundsTrigger();
+                HillMeshGeneration script = gameObject.GetComponentInParent<HillMeshGeneration>();
+                meshInstantiator.OnMeshTriggerInstantiate(script);
             }
 
             isTriggerHandled = true;
             StartCoroutine(ResetTriggerHandling());
         }
     }
-
+   
     private IEnumerator ResetTriggerHandling()
     {
         yield return new WaitUntil(() => !isTriggerHandled);

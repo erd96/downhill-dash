@@ -6,8 +6,8 @@ using UnityEngine;
 
 public struct MeshDataPoints
 {
-    public List<Vector3> terrainPoints; // Array to store the center points of each square
-    public List<Vector3> edgePoints; // Array to store the center points of each square
+    public List<Vector3> terrainPoints; 
+    public List<Vector3> edgePoints; 
     public List<Vector3> playerTrackLeft;
     public List<Vector3> playerTrackMiddle;
     public List<Vector3> playerTrackRight;
@@ -27,38 +27,38 @@ public struct MeshDataPoints
 }
 
 
-
-// Ensure the presence of a MeshFilter component
 [RequireComponent(typeof(MeshFilter))]
 public class HillMeshGeneration : MonoBehaviour
 {
+    public HillMeshGeneration prevMesh;
     Mesh mesh; // The generated mesh
     Vector3[] vertices; // Array to store the vertices of the mesh
+    Vector3[] endVertices; // Store the end coordinates for the next mesh'
+    Vector3[] obstacleSpawnPoints = new Vector3[3];
     Vector2[] uvs;
-    public Vector3[] endVertices; // Store the end coordinates for the next mesh'
     public MeshDataPoints meshDataPoints;
     MeshCollider meshCollider;
     public GameObject meshTriggerInstantiate;
     public GameObject meshTriggerDestroy;
-    public GameObject leftBoundsTrigger;
-    public GameObject rightBoundsTrigger;
-    public List<GameObject> prefabs = new List<GameObject>();
     int[] triangles; // Array to store the triangle indices of the mesh
-    int xSize = 50; // Number of vertices along the x-axis
+    int xSize = 7; // Number of vertices along the x-axis
     int zSize = 7; // Number of vertices along the z-axis
 
 
     float noiseScale = 1f; // Increase the scale for larger, smoother features
-    float maxSlope = 20f;    // Reduce the maximum slope for flatter terrain
+    float maxSlope = 5f;    // Reduce the maximum slope for flatter terrain
     float noiseAmplitude = .8f; // Adjust the amplitude of the Perlin noise
 
-    // Called at the start of the script
+
     void Start()
     {
+        this.name = "Slope";
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
         noiseScale = Random.Range(0.1f, 0.15f);
         meshDataPoints = new MeshDataPoints(xSize, zSize);
+        vertices = new Vector3[(xSize + 1) * (zSize + 1)];
+        endVertices = new Vector3[zSize + 1];
 
     }
 
@@ -66,70 +66,67 @@ public class HillMeshGeneration : MonoBehaviour
     // Generate the shape of the terrain mesh
     public void CreateShape()
     {
-
-        vertices = new Vector3[(xSize + 1) * (zSize + 1)];
-        endVertices = new Vector3[zSize + 1];
-        for (int i = 0, z = 0; z <= zSize; z++)
+        if (prevMesh == null)
         {
-            for (int x = 0; x <= xSize; x++)
+            for (int i = 0, z = 0; z <= zSize; z++)
             {
-                float y = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * noiseAmplitude; //Calculate the height using Perlin noise and slope
-
-                //Set the vertex position in the array
-                vertices[i] = new Vector3(x, y, z);
-
-                // Store the edgepoints. 
-                if (z == 0 || z == zSize)
+                for (int x = 0; x <= xSize; x++)
                 {
-                    meshDataPoints.edgePoints.Add(vertices[i]);
+                    float y = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * noiseAmplitude;
+                    vertices[i] = new Vector3(x, y, z);
+
+                    if (z == 0 || z == zSize)
+                    {
+                        meshDataPoints.edgePoints.Add(vertices[i]);
+                    }
+
+                    if (x == xSize)
+                    {
+                        endVertices[z] = vertices[i];
+                    }
+
+                    i++;
+
                 }
-
-                if (x == xSize)
-                {
-                    endVertices[z] = vertices[i];
-                }
-
-                i++;
-
             }
         }
+        else
+        {
+           CreateShapeAtLocation();
+        }
+
         CreateTriangles();
         CreateUVs(vertices.Length);
     }
 
 
 
-    public void CreateShapeAtLocation(Vector3[] startVertices)
+    void CreateShapeAtLocation()
     {
         vertices = new Vector3[(xSize + 1) * (zSize + 1)];
         endVertices = new Vector3[zSize + 1];
-        //int index = 0;
 
-        // Iterate through each vertex and calculate its height using Perlin noise and slope
         for (int i = 0, z = 0; z <= zSize; z++)
         {
 
-            for (int x = (int)startVertices[0].x; x <= (int)startVertices[0].x + xSize; x++)
+            for (int x = (int)prevMesh.endVertices[0].x; x <= (int)prevMesh.endVertices[0].x + xSize; x++)
             {
 
-
-                // Calculate the height using blended Perlin noise and slope
                 float oldY = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * noiseAmplitude;
                 float newY = CalculateSlope(x, z) + Mathf.PerlinNoise((x + xSize) * noiseScale, (z + zSize) * noiseScale) * noiseAmplitude;
 
-                // Interpolate between old and new heights based on the progress of the transition
-                float t = (float)(x - (int)startVertices[0].x) / (float)xSize;
+                float t = (float)(x - (int)prevMesh.endVertices[0].x) / (float)xSize;
                 float y = Mathf.Lerp(oldY, newY, t);
-                if (x == (int)startVertices[0].x && startVertices != null && z < startVertices.Length)
+                if (x == (int)prevMesh.endVertices[0].x && prevMesh.endVertices != null && z < prevMesh.endVertices.Length)
                 {
-                    vertices[i] = startVertices[z];
+                    vertices[i] = prevMesh.endVertices[z];
                 }
                 else
                 {
                     vertices[i] = new Vector3(x, y, z);
                 }
 
-                if (x == (int)startVertices[0].x + xSize)
+                if (x == (int)prevMesh.endVertices[0].x + xSize)
                 {
                     endVertices[z] = vertices[i];
                 }
@@ -147,6 +144,8 @@ public class HillMeshGeneration : MonoBehaviour
         CreateUVs(vertices.Length);
 
     }
+
+
 
     void CreateUVs(int length)
     {
@@ -165,13 +164,11 @@ public class HillMeshGeneration : MonoBehaviour
     void CreateTriangles()
     {
         triangles = new int[xSize * zSize * 6];
-        int vert = 0, tris = 0; // Variables to track vertex and triangle indices
-        // Generate triangles for the mesh to create the surface
+        int vert = 0, tris = 0; 
         for (int z = 0; z < zSize; z++)
         {
             for (int x = 0; x < xSize; x++)
             {
-                // Define the triangles based on the vertex indices
                 triangles[tris + 0] = vert;  // BL
                 triangles[tris + 1] = vert + xSize + 1; //TL
                 triangles[tris + 2] = vert + 1; // BR
@@ -200,6 +197,10 @@ public class HillMeshGeneration : MonoBehaviour
                     meshDataPoints.terrainPoints.Add(temp);
                     if (z == 1)
                     {
+                        if (x == 0)
+                        {
+                            obstacleSpawnPoints[0] = temp;
+                        }
                         meshDataPoints.playerTrackRight.Add(temp);
                         if (x == xSize - 1 && GameManager.Instance.playerTrackRightZ == 0.0)
                         {
@@ -210,6 +211,11 @@ public class HillMeshGeneration : MonoBehaviour
                     }
                     if (z == 3)
                     {
+                        if (x == 0)
+                        {
+                            obstacleSpawnPoints[1] = temp;
+                        }
+
                         meshDataPoints.playerTrackMiddle.Add(temp);
                         if (x==xSize-1 && GameManager.Instance.playerTrackMiddleZ == 0.0)
                         {
@@ -220,6 +226,11 @@ public class HillMeshGeneration : MonoBehaviour
                     }
                     if (z == 5)
                     {
+                        if (x == 0)
+                        {
+                            obstacleSpawnPoints[2] = temp;
+                        }
+
                         meshDataPoints.playerTrackLeft.Add(temp);
                         if (x == xSize - 1 && GameManager.Instance.playerTrackLeftZ == 0.0)
                         {
@@ -229,7 +240,6 @@ public class HillMeshGeneration : MonoBehaviour
                     }
                 }
 
-                // Update the vertex and triangle indices
                 vert++;
                 tris += 6;
             }
@@ -241,30 +251,25 @@ public class HillMeshGeneration : MonoBehaviour
     // Update the mesh with the generated vertices and triangles
     public void UpdateMesh()
     {
-        // Check if the mesh has been initialized
         if (mesh == null)
         {
-            // Initialize the mesh and assign it to the MeshFilter component
             mesh = new Mesh();
             GetComponent<MeshFilter>().mesh = mesh;
         }
-
-        // Clear the existing mesh data
         mesh.Clear();
-
-        // Set the vertices and triangles of the mesh
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.uv = uvs;
-
-        // Recalculate the normals for proper shading
         mesh.RecalculateNormals();
 
-        // Add a mesh collider once the mesh is generated and updated.
         meshCollider = gameObject.AddComponent<MeshCollider>();
         meshCollider.sharedMesh = mesh;
         CreateMeshTriggers();
         gameObject.layer = LayerMask.NameToLayer("Ground");
+        if (prevMesh != null)
+            ObstacleManager.Instance.InstantiateObstacles(gameObject.transform, obstacleSpawnPoints);
+        
+        
     }
 
 
@@ -275,6 +280,8 @@ public class HillMeshGeneration : MonoBehaviour
         float slope = (-maxSlope / xSize) * x;
         return slope;
     }
+
+    // For debugging purposes. 
     void OnDrawGizmos()
     {
         if (meshDataPoints.playerTrackLeft != null)
@@ -301,48 +308,18 @@ public class HillMeshGeneration : MonoBehaviour
 
     void CreateMeshTriggers()
     {
+        if (prevMesh!=null)
+        {
+            meshTriggerInstantiate = new GameObject();
+            meshTriggerInstantiate.transform.parent = this.transform;
+            BoxCollider boxInstantiate = meshTriggerInstantiate.AddComponent<BoxCollider>();
+            boxInstantiate.size = new Vector3(0.5f, 5f, zSize);
+            boxInstantiate.center = new Vector3(0f, 2f, 0f);
+            boxInstantiate.transform.position = mesh.bounds.center;
+            boxInstantiate.isTrigger = true;
+            meshTriggerInstantiate.AddComponent<TriggerEventHandler>().gameObject.name = "meshTriggerInstantiate";
+        }
 
-        meshTriggerInstantiate = new GameObject();
-        meshTriggerDestroy = new GameObject();
-        leftBoundsTrigger = new GameObject();
-        rightBoundsTrigger = new GameObject();
-
-        meshTriggerInstantiate.transform.parent = this.transform;
-        meshTriggerDestroy.transform.parent = this.transform;
-        leftBoundsTrigger.transform.parent = this.transform;
-        rightBoundsTrigger.transform.parent = this.transform;
-
-        BoxCollider boxInstantiate = meshTriggerInstantiate.AddComponent<BoxCollider>();
-        BoxCollider boxDestroy = meshTriggerDestroy.AddComponent<BoxCollider>();
-        BoxCollider leftBounds = leftBoundsTrigger.AddComponent<BoxCollider>();
-        BoxCollider rightBounds = rightBoundsTrigger.AddComponent<BoxCollider>();
-
-        boxInstantiate.size = new Vector3(0.5f, 5f, zSize);
-        boxDestroy.size = new Vector3(0.5f, 5f, zSize);
-        leftBounds.size = new Vector3(xSize, 15f, 0.5f);
-        rightBounds.size = new Vector3(xSize, 15f, 0.5f);
-
-        boxInstantiate.center = new Vector3(0f, 2f, 0f);
-        boxDestroy.center = new Vector3(0f, 2f, 0f);
-        leftBounds.center = new Vector3(0f, 2f, 0f);
-        rightBounds.center = new Vector3(0f, 2f, 0f);
-
-
-        boxInstantiate.transform.position = mesh.bounds.center;
-        boxDestroy.transform.position = new Vector3(mesh.bounds.center.x - mesh.bounds.extents.x + xSize / 20, mesh.bounds.extents.y + mesh.bounds.center.y - 1, mesh.bounds.center.z);
-        leftBounds.transform.position = new Vector3(mesh.bounds.center.x, mesh.bounds.center.y, mesh.bounds.center.z + mesh.bounds.extents.z);
-        rightBounds.transform.position = new Vector3(mesh.bounds.center.x, mesh.bounds.center.y, mesh.bounds.center.z - mesh.bounds.extents.z);
-
-        boxInstantiate.isTrigger = true;
-        boxDestroy.isTrigger = true;
-        leftBounds.isTrigger = true;
-        rightBounds.isTrigger = true;
-
-        // Add collider triggers to the specific GameObjects
-        meshTriggerInstantiate.AddComponent<TriggerEventHandler>().gameObject.name = "meshTriggerInstantiate";
-        meshTriggerDestroy.AddComponent<TriggerEventHandler>().gameObject.name = "meshTriggerDestroy";
-        leftBoundsTrigger.AddComponent<TriggerEventHandler>().gameObject.name = "leftBoundsTrigger";
-        rightBoundsTrigger.AddComponent<TriggerEventHandler>().gameObject.name = "rightBoundsTrigger";
     }
 }
 
