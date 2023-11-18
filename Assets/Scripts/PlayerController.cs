@@ -118,7 +118,7 @@ public class PlayerController : MonoBehaviour
         Vector3 moveDirection = (targetPosition - transform.position).normalized;
         characterController.Move(moveDirection * turnSpeed * Time.deltaTime);
 
-        if (Vector3.Distance(transform.position, targetPosition) < 0.05f)
+        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
         {
             isSwitchingTrack = false;
             axisDirection = 0f;
