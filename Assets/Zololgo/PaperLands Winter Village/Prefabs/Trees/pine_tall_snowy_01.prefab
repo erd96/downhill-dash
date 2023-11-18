@@ -12,9 +12,9 @@ GameObject:
   - component: {fileID: 3396826}
   - component: {fileID: 2386274}
   - component: {fileID: 7312049726505694688}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: pine_tall_snowy_01
-  m_TagString: Untagged
+  m_TagString: Obstacle
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 69

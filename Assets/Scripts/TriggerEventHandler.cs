@@ -19,6 +19,7 @@ public class TriggerEventHandler : MonoBehaviour
         {
             if (gameObject.name == "meshTriggerInstantiate")
             {
+                ObstacleManager.Instance.obstacleDensity ++;
                 meshInstantiator.OnMeshTriggerInstantiate();
             }
             else if (gameObject.name == "meshTriggerDestroy")

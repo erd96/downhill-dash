@@ -6,15 +6,20 @@ using UnityEngine;
 
 public struct MeshDataPoints
 {
-    public Vector3[] terrainPoints; // Array to store the center points of each square
+    public List<Vector3> terrainPoints; // Array to store the center points of each square
     public List<Vector3> edgePoints; // Array to store the center points of each square
+    public List<Vector3> playerTrackLeft;
+    public List<Vector3> playerTrackMiddle;
+    public List<Vector3> playerTrackRight;
     public List<Vector3> fencePointsLeft;
     public List<Vector3> fencePointsRight;
 
     public MeshDataPoints(int xSize, int zSize)
     {
-        terrainPoints = new Vector3[(xSize + 1) * (zSize - 1) + xSize * (zSize - 2)]; // Coordinates of centers of squares + vertices for the terrain middle.
-        //edgePoints = new Vector3[(xSize + 1) * 2 + xSize * 2]; // Coordinates of centers of squares + vertices for the edges.
+        terrainPoints = new List<Vector3>();
+        playerTrackLeft = new List<Vector3>();
+        playerTrackMiddle = new List<Vector3>();
+        playerTrackRight = new List<Vector3>();
         edgePoints = new List<Vector3>();
         fencePointsLeft = new List<Vector3>();
         fencePointsRight = new List<Vector3>();
@@ -40,17 +45,16 @@ public class HillMeshGeneration : MonoBehaviour
     public List<GameObject> prefabs = new List<GameObject>();
     int[] triangles; // Array to store the triangle indices of the mesh
     int xSize = 50; // Number of vertices along the x-axis
-    int zSize = 10; // Number of vertices along the z-axis
+    int zSize = 7; // Number of vertices along the z-axis
 
 
     float noiseScale = 1f; // Increase the scale for larger, smoother features
-    float maxSlope;    // Reduce the maximum slope for flatter terrain
+    float maxSlope = 20f;    // Reduce the maximum slope for flatter terrain
     float noiseAmplitude = .8f; // Adjust the amplitude of the Perlin noise
 
     // Called at the start of the script
     void Start()
     {
-        maxSlope = GameManager.Instance.maxSlope;
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
         noiseScale = Random.Range(0.1f, 0.15f);
@@ -65,40 +69,24 @@ public class HillMeshGeneration : MonoBehaviour
 
         vertices = new Vector3[(xSize + 1) * (zSize + 1)];
         endVertices = new Vector3[zSize + 1];
-        int index = 0;
-
-        // Iterate through each vertex and calculate its height using Perlin noise and slope
         for (int i = 0, z = 0; z <= zSize; z++)
         {
             for (int x = 0; x <= xSize; x++)
             {
-
-                //Calculate the height using Perlin noise and slope
-                float y = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * noiseAmplitude;
+                float y = CalculateSlope(x, z) + Mathf.PerlinNoise(x * noiseScale, z * noiseScale) * noiseAmplitude; //Calculate the height using Perlin noise and slope
 
                 //Set the vertex position in the array
                 vertices[i] = new Vector3(x, y, z);
+
+                // Store the edgepoints. 
+                if (z == 0 || z == zSize)
+                {
+                    meshDataPoints.edgePoints.Add(vertices[i]);
+                }
+
                 if (x == xSize)
                 {
                     endVertices[z] = vertices[i];
-                }
-                if (z == 0)
-                {
-                    meshDataPoints.edgePoints.Add(vertices[i]);
-                }
-                if (z == zSize)
-                {
-                    meshDataPoints.edgePoints.Add(vertices[i]);
-                }
-
-                if (z != 0 && z != zSize)
-                {
-
-                    meshDataPoints.terrainPoints[index + x] = vertices[i];
-                    if (x == xSize)
-                    {
-                        index += (xSize + 1) + xSize;
-                    }
                 }
 
                 i++;
@@ -115,11 +103,12 @@ public class HillMeshGeneration : MonoBehaviour
     {
         vertices = new Vector3[(xSize + 1) * (zSize + 1)];
         endVertices = new Vector3[zSize + 1];
-        int index = 0;
+        //int index = 0;
 
         // Iterate through each vertex and calculate its height using Perlin noise and slope
         for (int i = 0, z = 0; z <= zSize; z++)
         {
+
             for (int x = (int)startVertices[0].x; x <= (int)startVertices[0].x + xSize; x++)
             {
 
@@ -131,7 +120,6 @@ public class HillMeshGeneration : MonoBehaviour
                 // Interpolate between old and new heights based on the progress of the transition
                 float t = (float)(x - (int)startVertices[0].x) / (float)xSize;
                 float y = Mathf.Lerp(oldY, newY, t);
-
                 if (x == (int)startVertices[0].x && startVertices != null && z < startVertices.Length)
                 {
                     vertices[i] = startVertices[z];
@@ -146,24 +134,9 @@ public class HillMeshGeneration : MonoBehaviour
                     endVertices[z] = vertices[i];
                 }
 
-
-                if (z == 0)
+                if (z == 0 || z == zSize)
                 {
                     meshDataPoints.edgePoints.Add(vertices[i]);
-                }
-                if (z == zSize)
-                {
-                    meshDataPoints.edgePoints.Add(vertices[i]);
-                }
-
-                if (z != 0 && z != zSize)
-                {
-
-                    meshDataPoints.terrainPoints[index + (x - (int)startVertices[0].x)] = vertices[i];
-                    if (x == ((int)startVertices[0].x + xSize))
-                    {
-                        index += (xSize + 1) + xSize;
-                    }
                 }
 
 
@@ -224,7 +197,36 @@ public class HillMeshGeneration : MonoBehaviour
                 }
                 else
                 {
-                    meshDataPoints.terrainPoints[(xSize + 1) * z + xSize * (z - 1) + x] = temp;
+                    meshDataPoints.terrainPoints.Add(temp);
+                    if (z == 1)
+                    {
+                        meshDataPoints.playerTrackRight.Add(temp);
+                        if (x == xSize - 1 && GameManager.Instance.playerTrackRightZ == 0.0)
+                        {
+                            Vector3 woorldCoordinate = transform.TransformDirection(temp);
+                            GameManager.Instance.playerTrackRightZ = temp.z;
+                        }
+                        
+                    }
+                    if (z == 3)
+                    {
+                        meshDataPoints.playerTrackMiddle.Add(temp);
+                        if (x==xSize-1 && GameManager.Instance.playerTrackMiddleZ == 0.0)
+                        {
+                            Vector3 woorldCoordinate = transform.TransformDirection(temp);
+                            GameManager.Instance.playerTrackMiddleZ = temp.z;
+                        }
+                        
+                    }
+                    if (z == 5)
+                    {
+                        meshDataPoints.playerTrackLeft.Add(temp);
+                        if (x == xSize - 1 && GameManager.Instance.playerTrackLeftZ == 0.0)
+                        {
+                            Vector3 woorldCoordinate = transform.TransformDirection(temp);
+                            GameManager.Instance.playerTrackLeftZ = temp.z;
+                        }
+                    }
                 }
 
                 // Update the vertex and triangle indices
@@ -273,36 +275,29 @@ public class HillMeshGeneration : MonoBehaviour
         float slope = (-maxSlope / xSize) * x;
         return slope;
     }
-    //void OnDrawGizmos()
-    //{
-    //    if (meshDataPoints.edgePoints != null)
-    //    {
-            
-    //        for (int i = 0; i < meshDataPoints.edgePoints.Count; i++)
-    //        {
-    //            Gizmos.color = Color.red;
-    //            Gizmos.DrawSphere(meshDataPoints.edgePoints[i], 0.1f);
-    //        }
+    void OnDrawGizmos()
+    {
+        if (meshDataPoints.playerTrackLeft != null)
+        {
+            for (int i = 0; i < meshDataPoints.playerTrackLeft.Count; i++)
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawSphere(meshDataPoints.playerTrackLeft[i], 0.1f);
+            }
 
-    //        for (int i = 0; i < meshDataPoints.fencePointsLeft.Count; i++)
-    //        {
-    //            Gizmos.color = Color.cyan;
-    //            Gizmos.DrawSphere(meshDataPoints.fencePointsLeft[i], 0.1f);
-    //        }
+            for (int i = 0; i < meshDataPoints.playerTrackMiddle.Count; i++)
+            {
+                Gizmos.color = Color.cyan;
+                Gizmos.DrawSphere(meshDataPoints.playerTrackMiddle[i], 0.1f);
+            }
 
-    //        for (int i = 0; i < meshDataPoints.fencePointsRight.Count; i++)
-    //        {
-    //            Gizmos.color = Color.magenta;
-    //            Gizmos.DrawSphere(meshDataPoints.fencePointsRight[i], 0.1f);
-
-    //        }
-    //        for (int i = 0; i < meshDataPoints.terrainPoints.Length; i++)
-    //        {
-    //            Gizmos.color = Color.blue;
-    //            Gizmos.DrawCube(meshDataPoints.terrainPoints[i], new Vector3(0.1f, 0.1f, 0.1f));
-    //        }
-    //    }
-    //}
+            for (int i = 0; i < meshDataPoints.playerTrackRight.Count; i++)
+            {
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawSphere(meshDataPoints.playerTrackRight[i], 0.1f);
+            }
+        }
+    }
 
     void CreateMeshTriggers()
     {

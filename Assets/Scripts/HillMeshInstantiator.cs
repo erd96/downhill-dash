@@ -58,6 +58,7 @@ public class HillMeshInstantiator : MonoBehaviour
 
         // Set the last instantiated prefab
         InstantiateEdgePrefabs(script);
+        //ObstacleManager.Instance.GenerateObstacles(script);
 
     }
 

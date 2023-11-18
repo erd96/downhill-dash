@@ -1,24 +1,25 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float playerSpeed;
     [SerializeField] private float turnSpeed;
-    [SerializeField] private GameObject snowParticle1;
-    [SerializeField] private GameObject snowParticle2;
+    [SerializeField] private GameObject snowParticle;
     [SerializeField] private float jumpHeight;
+    [SerializeField] private float rotationSpeed = 10f;
 
     private CharacterController characterController;
     private Animator animator;
     private float axisDirection = 0f;
-    private float currentMovement = 0.5f;
-    private float targetMovement = 0.5f;
-    private float movementChangeSpeed = 1f;
     private int jumpAnim;
-    [SerializeField] private float rotationSpeed = 50f; 
     private Vector3 velocity;
 
     private bool isJumping;
+
+    private PlayerTrack currentTrack = PlayerTrack.Middle;
+    private float targetZ;
+    private bool isSwitchingTrack = false;
 
     void Start()
     {
@@ -31,72 +32,97 @@ public class PlayerController : MonoBehaviour
     {
         GameManager.Instance.playerSpeed += 0.02f * Time.deltaTime;
         playerSpeed = GameManager.Instance.playerSpeed;
-        
 
         if (characterController.isGrounded)
         {
             HandleMovementInput();
             AlignToGround();
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space) && !isSwitchingTrack)
             {
                 Jump();
             }
-
-            // Rotate the player based on the current rotation value
-            //transform.rotation = Quaternion.Euler(transform.eulerAngles.x, currentRotation, transform.eulerAngles.z);
+            snowParticle.SetActive(true);
+            if (isSwitchingTrack)
+            {
+                MoveAlongZ();
+            }
+        }
+        else
+        {
+            snowParticle.SetActive(false);
         }
 
-        // Apply gravity using Unity's built-in gravity
         float verticalSpeed = velocity.y;
         verticalSpeed += Physics.gravity.y * Time.deltaTime;
         velocity.y = verticalSpeed;
 
-        // Move the character using CharacterController
         characterController.Move(new Vector3(playerSpeed, 0f, axisDirection * turnSpeed) * Time.deltaTime);
         characterController.Move(velocity * Time.deltaTime);
     }
 
     void HandleMovementInput()
     {
-        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+        if ((Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) && currentTrack != PlayerTrack.Left)
         {
-            targetMovement = 1f;
-            axisDirection = Mathf.MoveTowards(axisDirection, 1f, turnSpeed * Time.deltaTime);
-
-            if (transform.eulerAngles.y > 60f)
-            {
-                transform.Rotate(Vector3.up, -rotationSpeed * Time.deltaTime);
-            }
-
+            SwitchTrack(PlayerTrack.Left);
         }
-        else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+        if ((Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) && currentTrack != PlayerTrack.Right)
         {
-            targetMovement = 0f;
-            axisDirection = Mathf.MoveTowards(axisDirection, -1f, turnSpeed * Time.deltaTime);
-
-            if (transform.eulerAngles.y < 120f)
-            {
-                transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
-            }
-
+            SwitchTrack(PlayerTrack.Right);
         }
-        else
+    }
+
+    void SwitchTrack(PlayerTrack targetTrack)
+    {
+        if (isSwitchingTrack) return;
+
+        switch (targetTrack)
         {
-            targetMovement = 0.5f;
-            axisDirection = Mathf.MoveTowards(axisDirection, 0f, turnSpeed * Time.deltaTime);
-            if (transform.eulerAngles.y < 90f)
-            {
-                transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
-            }
-            else if (transform.eulerAngles.y > 90f)
-            {
-                transform.Rotate(Vector3.up, -rotationSpeed * Time.deltaTime);
-            }
-
+            case PlayerTrack.Left:
+                if (currentTrack == PlayerTrack.Middle)
+                {
+                    currentTrack = PlayerTrack.Left;
+                    targetZ = GameManager.Instance.playerTrackLeftZ;
+                    isSwitchingTrack = true;
+                }
+                else if (currentTrack == PlayerTrack.Right)
+                {
+                    currentTrack = PlayerTrack.Middle;
+                    targetZ = GameManager.Instance.playerTrackMiddleZ;
+                    isSwitchingTrack = true;
+                }
+                axisDirection = 1f;
+                break;
+            case PlayerTrack.Right:
+                if (currentTrack == PlayerTrack.Middle)
+                {
+                    currentTrack = PlayerTrack.Right;
+                    targetZ = GameManager.Instance.playerTrackRightZ;
+                    isSwitchingTrack = true;
+                }
+                else if (currentTrack == PlayerTrack.Left)
+                {
+                    currentTrack = PlayerTrack.Middle;
+                    targetZ = GameManager.Instance.playerTrackMiddleZ;
+                    isSwitchingTrack = true;
+                }
+                axisDirection = -1f;
+                break;
         }
-        currentMovement = Mathf.MoveTowards(currentMovement, targetMovement, movementChangeSpeed * Time.deltaTime);
-        animator.SetFloat("Movement", currentMovement);
+    }
+
+    void MoveAlongZ()
+    {
+        Vector3 targetPosition = new Vector3(transform.position.x, transform.position.y, targetZ);
+        Vector3 moveDirection = (targetPosition - transform.position).normalized;
+        characterController.Move(moveDirection * turnSpeed * Time.deltaTime);
+
+        if (Vector3.Distance(transform.position, targetPosition) < 0.05f)
+        {
+            isSwitchingTrack = false;
+            axisDirection = 0f;
+        }
     }
 
     void AlignToGround()
@@ -121,7 +147,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // Called by Unity after processing animation movements
     void OnAnimatorMove()
     {
         if (isJumping && characterController.isGrounded)
@@ -130,4 +155,11 @@ public class PlayerController : MonoBehaviour
             isJumping = false;
         }
     }
+}
+
+public enum PlayerTrack
+{
+    Left,
+    Middle,
+    Right
 }

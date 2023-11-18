@@ -1347,19 +1347,19 @@ AnimatorController:
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 0}
+    m_Controller: {fileID: 9100000}
   - m_Name: IsJumping1
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 0}
+    m_Controller: {fileID: 9100000}
   - m_Name: IsJumping2
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
-    m_Controller: {fileID: 0}
+    m_Controller: {fileID: 9100000}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: Base Layer
@@ -2149,21 +2149,13 @@ BlendTree:
   m_Name: Movement
   m_Childs:
   - serializedVersion: 2
-    m_Motion: {fileID: 1827226128182048838, guid: b793c5358dddfbf48bc86c45a2db9b2a, type: 3}
-    m_Threshold: 0
-    m_Position: {x: 0, y: 0}
-    m_TimeScale: 1
-    m_CycleOffset: 0
-    m_DirectBlendParameter: Movement
-    m_Mirror: 0
-  - serializedVersion: 2
-    m_Motion: {fileID: 1827226128182048838, guid: d47885ca3e5d5e149b486b019043c5f0, type: 3}
+    m_Motion: {fileID: 1827226128182048838, guid: 2ff4a52d9a4f9ac49be5432930a32613, type: 3}
     m_Threshold: 0.25
     m_Position: {x: 0, y: 0}
-    m_TimeScale: 1
-    m_CycleOffset: 0
-    m_DirectBlendParameter: TurnLeftAnim
-    m_Mirror: 0
+    m_TimeScale: 3
+    m_CycleOffset: 0.5
+    m_DirectBlendParameter: Movement
+    m_Mirror: 1
   - serializedVersion: 2
     m_Motion: {fileID: 1827226128182048838, guid: 65b18087fd3ca4347b2b5674b930b1e0, type: 3}
     m_Threshold: 0.5
@@ -2173,26 +2165,18 @@ BlendTree:
     m_DirectBlendParameter: Movement
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 1827226128182048838, guid: d47885ca3e5d5e149b486b019043c5f0, type: 3}
+    m_Motion: {fileID: 1827226128182048838, guid: 2ff4a52d9a4f9ac49be5432930a32613, type: 3}
     m_Threshold: 0.75
     m_Position: {x: 0, y: 0}
-    m_TimeScale: 1
-    m_CycleOffset: 0.5
-    m_DirectBlendParameter: TurnLeftAnim
-    m_Mirror: 1
-  - serializedVersion: 2
-    m_Motion: {fileID: 1827226128182048838, guid: b793c5358dddfbf48bc86c45a2db9b2a, type: 3}
-    m_Threshold: 1
-    m_Position: {x: 0, y: 0}
-    m_TimeScale: 1
-    m_CycleOffset: 0.5
+    m_TimeScale: 3
+    m_CycleOffset: 0
     m_DirectBlendParameter: Movement
-    m_Mirror: 1
+    m_Mirror: 0
   m_BlendParameter: Movement
   m_BlendParameterY: TurnLeftAnim
-  m_MinThreshold: 0
-  m_MaxThreshold: 1
-  m_UseAutomaticThresholds: 1
+  m_MinThreshold: 0.25
+  m_MaxThreshold: 0.75
+  m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 0
 --- !u!1101 &4684489712393932706
