@@ -33,11 +33,12 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        GameManager.Instance.playerSpeed += 0.02f * Time.deltaTime;
-        playerSpeed = GameManager.Instance.playerSpeed;
+
 
         if (characterController.isGrounded)
         {
+            GameManager.Instance.playerSpeed += 0.02f * Time.deltaTime;
+            playerSpeed = GameManager.Instance.playerSpeed;
             HandleMovementInput();
             AlignToGround();
 
@@ -55,16 +56,19 @@ public class PlayerController : MonoBehaviour
                 if (targetZ == 0) targetZ = GameManager.Instance.playerTrackMiddleZ;
                 OscillateIdleParameter();
             }
+
         }
         else
         {
             snowParticle.SetActive(false);
+            float verticalSpeed = velocity.y;
+            verticalSpeed += Physics.gravity.y * Time.deltaTime;
+
+            velocity.y = verticalSpeed;
         }
 
-        float verticalSpeed = velocity.y;
-        verticalSpeed += Physics.gravity.y * Time.deltaTime;
-        velocity.y = verticalSpeed;
-
+     
+        print(velocity.y);
         characterController.Move(new Vector3(playerSpeed, 0f, axisDirection * turnSpeed) * Time.deltaTime);
         characterController.Move(velocity * Time.deltaTime);
         
@@ -152,9 +156,12 @@ public class PlayerController : MonoBehaviour
 
         if (!isJumping)
         {
+            print("Velocity y before jump" + velocity.y);
             animator.SetBool($"IsJumping{jumpAnim}", true);
             isJumping = true;
+            playerSpeed = 0f;
             velocity.y = Mathf.Sqrt(jumpHeight * -2 * Physics.gravity.y);
+            print("Velocity y after jump: "+velocity.y);
         }
     }
 
@@ -167,16 +174,16 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // Oscillate the "IdleOscillation" parameter
     void OscillateIdleParameter()
     {
         float delta = 0.2f;
         float frequency = 1f;
 
         float oscValue = Mathf.PingPong(Time.time * frequency, 1.0f) * 2.0f - 1.0f;
-        Vector3 newPosition = new Vector3(transform.position.x, transform.position.y, Mathf.Lerp((targetZ - delta), (targetZ + delta), (oscValue + 1f) / 2f));
+        float targetPositionZ = Mathf.Lerp((targetZ - delta), (targetZ + delta), (oscValue + 1f) / 2f);
 
-        characterController.Move(newPosition - transform.position);
+        Vector3 targetPosition = new Vector3(transform.position.x, transform.position.y, targetPositionZ);
+        characterController.Move((targetPosition - transform.position) * Time.deltaTime * 5f);
 
         animator.SetFloat("SkiingOscillation", (oscValue + 1f) / 2f); // Normalize the sine wave to [0, 1]
     }
