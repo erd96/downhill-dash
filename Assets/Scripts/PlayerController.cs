@@ -8,6 +8,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject snowParticle;
     [SerializeField] private float jumpHeight;
     [SerializeField] private float rotationSpeed = 10f;
+    [SerializeField] private float idleOscillationSpeed = 0.01f;
+    [SerializeField] private float maxOscillationDistance = 0.2f;
 
     private CharacterController characterController;
     private Animator animator;
@@ -20,6 +22,7 @@ public class PlayerController : MonoBehaviour
     private PlayerTrack currentTrack = PlayerTrack.Middle;
     private float targetZ;
     private bool isSwitchingTrack = false;
+
 
     void Start()
     {
@@ -47,6 +50,11 @@ public class PlayerController : MonoBehaviour
             {
                 MoveAlongZ();
             }
+            else
+            {
+                if (targetZ == 0) targetZ = GameManager.Instance.playerTrackMiddleZ;
+                OscillateIdleParameter();
+            }
         }
         else
         {
@@ -59,6 +67,7 @@ public class PlayerController : MonoBehaviour
 
         characterController.Move(new Vector3(playerSpeed, 0f, axisDirection * turnSpeed) * Time.deltaTime);
         characterController.Move(velocity * Time.deltaTime);
+        
     }
 
     void HandleMovementInput()
@@ -67,10 +76,12 @@ public class PlayerController : MonoBehaviour
         {
             SwitchTrack(PlayerTrack.Left);
         }
-        if ((Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) && currentTrack != PlayerTrack.Right)
+        else if ((Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) && currentTrack != PlayerTrack.Right)
         {
             SwitchTrack(PlayerTrack.Right);
         }
+
+
     }
 
     void SwitchTrack(PlayerTrack targetTrack)
@@ -155,6 +166,21 @@ public class PlayerController : MonoBehaviour
             isJumping = false;
         }
     }
+
+    // Oscillate the "IdleOscillation" parameter
+    void OscillateIdleParameter()
+    {
+        float delta = 0.2f;
+        float frequency = 1f;
+
+        float oscValue = Mathf.PingPong(Time.time * frequency, 1.0f) * 2.0f - 1.0f;
+        Vector3 newPosition = new Vector3(transform.position.x, transform.position.y, Mathf.Lerp((targetZ - delta), (targetZ + delta), (oscValue + 1f) / 2f));
+
+        characterController.Move(newPosition - transform.position);
+
+        animator.SetFloat("SkiingOscillation", (oscValue + 1f) / 2f); // Normalize the sine wave to [0, 1]
+    }
+
 }
 
 public enum PlayerTrack

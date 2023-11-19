@@ -145,11 +145,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb95e3ac7ee8c9a43b6d1ce738422e53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerSpeed: 0
+  playerSpeed: 1
   turnSpeed: 1
   snowParticle: {fileID: 1621425175}
-  jumpHeight: 0.1
+  jumpHeight: 0
   rotationSpeed: 10
+  idleOscillationSpeed: 1
+  maxOscillationDistance: 0.1
 --- !u!143 &284940132
 CharacterController:
   m_ObjectHideFlags: 0
@@ -165,9 +167,9 @@ CharacterController:
   m_Radius: 0.38
   m_SlopeLimit: 45
   m_StepOffset: 0.3
-  m_SkinWidth: 0.11
+  m_SkinWidth: 0.13
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 1.25, z: 0}
+  m_Center: {x: 0, y: 1.2, z: 0}
 --- !u!1 &436470317
 GameObject:
   m_ObjectHideFlags: 0
@@ -228,14 +230,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 436470317}
-  m_LocalRotation: {x: 0.20673802, y: 0.67620957, z: -0.20673802, w: 0.67620957}
-  m_LocalPosition: {x: -2.072594, y: 2.0779822, z: 3.5}
+  m_LocalRotation: {x: 0.22436826, y: 0.6705661, z: -0.22436826, w: 0.6705661}
+  m_LocalPosition: {x: -0.7379532, y: 2.6157224, z: 3.4999998}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1418316008}
   m_Father: {fileID: 0}
   m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 34, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 37, y: 90, z: 0}
 --- !u!114 &436470320
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -248,11 +250,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 449ef5ebbe24720439ec31d15f7b6f3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_FocusTracksTarget: 0
-  m_FocusTracking: 0
-  m_FocusTarget: {fileID: 0}
-  m_FocusOffset: 0
-  m_Profile: {fileID: 0}
 --- !u!1001 &654311929
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -490,6 +487,9 @@ MonoBehaviour:
   - {fileID: 138714, guid: a5e2b1af166b66644b1ee5e73fe2a182, type: 3}
   - {fileID: 152416, guid: a85d1edc35b2ed049890c1278faf25e0, type: 3}
   - {fileID: 162136, guid: 7d88a0a8be53f244b88192f9c7ba255b, type: 3}
+  - {fileID: 1000011914158716, guid: 78af3a7aad589fa49b8fb946c9e57362, type: 3}
+  - {fileID: 1000011147454354, guid: 01d2dd5255c308a4db25dbb77d9f65ea, type: 3}
+  - {fileID: 1000012936420096, guid: a6dbabfd6d3c8cb47b7243b0b8723af2, type: 3}
   fencePrefabs:
   - {fileID: 1866928168151864, guid: a2e9cc9f849bb8e48836556aaec8d76d, type: 3}
   - {fileID: 1401566168650162, guid: 7ccc6bfd860115442b7715c92146231b, type: 3}
@@ -533,11 +533,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 88107124221991780, guid: 61afc4acdea5ebd41a26b4414748726d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 0.46
       objectReference: {fileID: 0}
     - target: {fileID: 88107124221991780, guid: 61afc4acdea5ebd41a26b4414748726d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.15
+      value: 1.183
       objectReference: {fileID: 0}
     - target: {fileID: 88107124221991780, guid: 61afc4acdea5ebd41a26b4414748726d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -721,6 +721,9 @@ MonoBehaviour:
   - {fileID: 152416, guid: a85d1edc35b2ed049890c1278faf25e0, type: 3}
   - {fileID: 138714, guid: a5e2b1af166b66644b1ee5e73fe2a182, type: 3}
   - {fileID: 162136, guid: 7d88a0a8be53f244b88192f9c7ba255b, type: 3}
+  - {fileID: 1000011914158716, guid: 78af3a7aad589fa49b8fb946c9e57362, type: 3}
+  - {fileID: 1000011147454354, guid: 01d2dd5255c308a4db25dbb77d9f65ea, type: 3}
+  - {fileID: 1000012936420096, guid: a6dbabfd6d3c8cb47b7243b0b8723af2, type: 3}
   minObstacleDistance: 1
   obstacleDensity: 5
 --- !u!4 &1004831249
@@ -763,8 +766,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1242063067}
-  m_LocalRotation: {x: 0.29237175, y: -0, z: -0, w: 0.9563048}
-  m_LocalPosition: {x: 0.0000007947285, y: 6.4266067, z: -6.9086466}
+  m_LocalRotation: {x: 0.31730467, y: -0, z: -0, w: 0.9483237}
+  m_LocalPosition: {x: 0.0000011920929, y: 4.775741, z: -3.9931774}
   m_LocalScale: {x: 1.5000004, y: 1.5000004, z: 1.5000004}
   m_Children: []
   m_Father: {fileID: 284940130}
@@ -991,7 +994,7 @@ MonoBehaviour:
   m_TargetMovementOnly: 1
   m_ScreenX: 0.5
   m_ScreenY: 0.5
-  m_CameraDistance: 2.5
+  m_CameraDistance: 1.5
   m_DeadZoneWidth: 0
   m_DeadZoneHeight: 0
   m_DeadZoneDepth: 0

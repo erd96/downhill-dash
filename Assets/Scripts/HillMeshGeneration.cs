@@ -85,7 +85,18 @@ public class HillMeshGeneration : MonoBehaviour
                         endVertices[z] = vertices[i];
                     }
 
+                    if (z == 1)
+                    {
+                        meshDataPoints.fencePointsRight.Add(vertices[i]);
+                    }
+
+                    if (z == zSize - 1)
+                    {
+                        meshDataPoints.fencePointsLeft.Add(vertices[i]);
+                    }
+
                     i++;
+
 
                 }
             }
@@ -136,6 +147,15 @@ public class HillMeshGeneration : MonoBehaviour
                     meshDataPoints.edgePoints.Add(vertices[i]);
                 }
 
+                if (z == 1)
+                {
+                    meshDataPoints.fencePointsRight.Add(vertices[i]);
+                }
+
+                if (z == zSize-1)
+                {
+                    meshDataPoints.fencePointsLeft.Add(vertices[i]);
+                }
 
                 i++;
             }
@@ -179,21 +199,6 @@ public class HillMeshGeneration : MonoBehaviour
 
                 Vector3 temp = (vertices[triangles[tris + 0]] + vertices[triangles[tris + 1]] + vertices[triangles[tris + 5]] + vertices[triangles[tris + 3]]) / 4f;
 
-                if (z == 0 | z == zSize - 1)
-                {
-                    int index = z == 0 ? x + xSize + 1 : x + xSize * 2 + 1;
-
-                    if (z == 0)
-                    {
-                        meshDataPoints.fencePointsRight.Add(temp);
-                    }  
-                    else
-                    {
-                        meshDataPoints.fencePointsLeft.Add(temp);
-                    }
-                }
-                else
-                {
                     meshDataPoints.terrainPoints.Add(temp);
                     if (z == 1)
                     {
@@ -238,7 +243,7 @@ public class HillMeshGeneration : MonoBehaviour
                             GameManager.Instance.playerTrackLeftZ = temp.z;
                         }
                     }
-                }
+
 
                 vert++;
                 tris += 6;
@@ -303,6 +308,19 @@ public class HillMeshGeneration : MonoBehaviour
                 Gizmos.color = Color.magenta;
                 Gizmos.DrawSphere(meshDataPoints.playerTrackRight[i], 0.1f);
             }
+
+            for (int i = 0; i < meshDataPoints.fencePointsLeft.Count; i++)
+            {
+                Gizmos.color = Color.black;
+                Gizmos.DrawSphere(meshDataPoints.fencePointsLeft[i], 0.1f);
+            }
+
+            for (int i = 0; i < meshDataPoints.fencePointsRight.Count; i++)
+            {
+                Gizmos.color = Color.black;
+                Gizmos.DrawSphere(meshDataPoints.fencePointsRight[i], 0.1f);
+            }
+
         }
     }
 
