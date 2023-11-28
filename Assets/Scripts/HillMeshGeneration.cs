@@ -45,7 +45,7 @@ public class HillMeshGeneration : MonoBehaviour
     int zSize = 7; // Number of vertices along the z-axis
 
 
-    float noiseScale = 1f; // Increase the scale for larger, smoother features
+    float noiseScale = 2f; // Increase the scale for larger, smoother features
     float maxSlope = 5f;    // Reduce the maximum slope for flatter terrain
     float noiseAmplitude = .8f; // Adjust the amplitude of the Perlin noise
 
@@ -59,7 +59,6 @@ public class HillMeshGeneration : MonoBehaviour
         meshDataPoints = new MeshDataPoints(xSize, zSize);
         vertices = new Vector3[(xSize + 1) * (zSize + 1)];
         endVertices = new Vector3[zSize + 1];
-
     }
 
 
@@ -271,9 +270,12 @@ public class HillMeshGeneration : MonoBehaviour
         meshCollider.sharedMesh = mesh;
         CreateMeshTriggers();
         gameObject.layer = LayerMask.NameToLayer("Ground");
-        if (prevMesh != null)
+        Debug.Log($"Terrain Count: {GameManager.Instance.terrainCount}");
+        if (prevMesh != null && GameManager.Instance.terrainCount > 4)
+        {
+            Debug.Log($"Terrain Count: {GameManager.Instance.terrainCount}");
             ObstacleManager.Instance.InstantiateObstacles(gameObject.transform, obstacleSpawnPoints);
-        
+        }
         
     }
 

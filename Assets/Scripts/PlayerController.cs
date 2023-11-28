@@ -23,7 +23,6 @@ public class PlayerController : MonoBehaviour
     private float targetZ;
     private bool isSwitchingTrack = false;
 
-
     void Start()
     {
         characterController = GetComponent<CharacterController>();
@@ -67,8 +66,6 @@ public class PlayerController : MonoBehaviour
             velocity.y = verticalSpeed;
         }
 
-     
-        print(velocity.y);
         characterController.Move(new Vector3(playerSpeed, 0f, axisDirection * turnSpeed) * Time.deltaTime);
         characterController.Move(velocity * Time.deltaTime);
         
@@ -100,13 +97,16 @@ public class PlayerController : MonoBehaviour
                     currentTrack = PlayerTrack.Left;
                     targetZ = GameManager.Instance.playerTrackLeftZ;
                     isSwitchingTrack = true;
+                    animator.SetBool("IsSwitchingLeft", true);
                 }
                 else if (currentTrack == PlayerTrack.Right)
                 {
                     currentTrack = PlayerTrack.Middle;
                     targetZ = GameManager.Instance.playerTrackMiddleZ;
                     isSwitchingTrack = true;
+                    animator.SetBool("IsSwitchingLeft", true);
                 }
+                
                 axisDirection = 1f;
                 break;
             case PlayerTrack.Right:
@@ -115,12 +115,14 @@ public class PlayerController : MonoBehaviour
                     currentTrack = PlayerTrack.Right;
                     targetZ = GameManager.Instance.playerTrackRightZ;
                     isSwitchingTrack = true;
+                    animator.SetBool("IsSwitchingRight", true);
                 }
                 else if (currentTrack == PlayerTrack.Left)
                 {
                     currentTrack = PlayerTrack.Middle;
                     targetZ = GameManager.Instance.playerTrackMiddleZ;
                     isSwitchingTrack = true;
+                    animator.SetBool("IsSwitchingRight", true);
                 }
                 axisDirection = -1f;
                 break;
@@ -137,6 +139,8 @@ public class PlayerController : MonoBehaviour
         {
             isSwitchingTrack = false;
             axisDirection = 0f;
+            animator.SetBool("IsSwitchingLeft", false);
+            animator.SetBool("IsSwitchingRight", false);
         }
     }
 

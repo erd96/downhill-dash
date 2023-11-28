@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7312049726505694688}
   m_Layer: 6
   m_Name: pine_tall_snowy_01
-  m_TagString: Obstacle
+  m_TagString: Obstacle1Z
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 69

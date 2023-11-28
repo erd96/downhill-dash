@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
     public GameState State;
+    public float terrainCount = 0f;
     public static event Action<GameState> OnGameStateChange; // Event for GameState change 
 
     public float playerSpeed = 0.5f;

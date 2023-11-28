@@ -53,7 +53,7 @@ public class HillMeshInstantiator : MonoBehaviour
 
         script.CreateShape();
         script.UpdateMesh();
-
+        GameManager.Instance.terrainCount++;
         //startVertices = script.endVertices;
         InstantiateEdgePrefabs(script);
         //ObstacleManager.Instance.GenerateObstacles(script);
