@@ -16,7 +16,8 @@ public class TriggerEventHandler : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!isTriggerHandled)
+        
+        if (!isTriggerHandled && other.CompareTag("Player"))
         {
             if (gameObject.name == "meshTriggerInstantiate")
             {

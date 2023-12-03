@@ -14,7 +14,6 @@ public class PlayerController : MonoBehaviour
     private CharacterController characterController;
     private Animator animator;
     private float axisDirection = 0f;
-    private int jumpAnim;
     private Vector3 velocity;
 
     private bool isJumping;
@@ -33,14 +32,12 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
 
-
         if (characterController.isGrounded)
         {
             GameManager.Instance.playerSpeed += 0.02f * Time.deltaTime;
             playerSpeed = GameManager.Instance.playerSpeed;
             HandleMovementInput();
             AlignToGround();
-
             if (Input.GetKeyDown(KeyCode.Space) && !isSwitchingTrack)
             {
                 Jump();
@@ -61,14 +58,14 @@ public class PlayerController : MonoBehaviour
         {
             snowParticle.SetActive(false);
             float verticalSpeed = velocity.y;
-            verticalSpeed += Physics.gravity.y * Time.deltaTime;
+            verticalSpeed += Physics.gravity.y * 3 * Time.deltaTime;
 
             velocity.y = verticalSpeed;
         }
 
         characterController.Move(new Vector3(playerSpeed, 0f, axisDirection * turnSpeed) * Time.deltaTime);
         characterController.Move(velocity * Time.deltaTime);
-        
+
     }
 
     void HandleMovementInput()
@@ -106,7 +103,7 @@ public class PlayerController : MonoBehaviour
                     isSwitchingTrack = true;
                     animator.SetBool("IsSwitchingLeft", true);
                 }
-                
+
                 axisDirection = 1f;
                 break;
             case PlayerTrack.Right:
@@ -135,7 +132,7 @@ public class PlayerController : MonoBehaviour
         Vector3 moveDirection = (targetPosition - transform.position).normalized;
         characterController.Move(moveDirection * turnSpeed * Time.deltaTime);
 
-        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+        if (Vector3.Distance(transform.position, targetPosition) < 0.3f)
         {
             isSwitchingTrack = false;
             axisDirection = 0f;
@@ -156,24 +153,29 @@ public class PlayerController : MonoBehaviour
 
     void Jump()
     {
-        jumpAnim = Random.Range(1, 3);
 
         if (!isJumping)
         {
-            print("Velocity y before jump" + velocity.y);
-            animator.SetBool($"IsJumping{jumpAnim}", true);
+            animator.SetBool("IsJumping", true);
             isJumping = true;
-            playerSpeed = 0f;
             velocity.y = Mathf.Sqrt(jumpHeight * -2 * Physics.gravity.y);
-            print("Velocity y after jump: "+velocity.y);
+        }
+    }
+    void OnAnimatorMove()
+    {
+        if (isJumping)
+        {
+            StartCoroutine(CheckGroundedAfterDelay());
         }
     }
 
-    void OnAnimatorMove()
+    IEnumerator CheckGroundedAfterDelay()
     {
-        if (isJumping && characterController.isGrounded)
+        yield return new WaitForSeconds(0.1f);
+
+        if (characterController.isGrounded)
         {
-            animator.SetBool($"IsJumping{jumpAnim}", false);
+            animator.SetBool("IsJumping", false);
             isJumping = false;
         }
     }
@@ -189,10 +191,12 @@ public class PlayerController : MonoBehaviour
         Vector3 targetPosition = new Vector3(transform.position.x, transform.position.y, targetPositionZ);
         characterController.Move((targetPosition - transform.position) * Time.deltaTime * 5f);
 
-        animator.SetFloat("SkiingOscillation", (oscValue + 1f) / 2f); // Normalize the sine wave to [0, 1]
+        animator.SetFloat("SkiingOscillation", (oscValue + 1f) / 2f);
     }
 
+
 }
+
 
 public enum PlayerTrack
 {
@@ -200,3 +204,7 @@ public enum PlayerTrack
     Middle,
     Right
 }
+
+
+
+

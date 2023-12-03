@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this; // Singleton
+        Instance = this; 
     }
 
 
@@ -42,18 +42,14 @@ public class GameManager : MonoBehaviour
                 break;
         }
 
-        OnGameStateChange?.Invoke(newState); //
+        OnGameStateChange?.Invoke(newState); 
     }
     void Start()
     {
         UpdateGameState(GameState.StartGame);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+
 }
 
 public enum GameState

@@ -13,6 +13,7 @@ public struct MeshDataPoints
     public List<Vector3> playerTrackRight;
     public List<Vector3> fencePointsLeft;
     public List<Vector3> fencePointsRight;
+    public Vector3 chairLiftSpawn;
 
     public MeshDataPoints(int xSize, int zSize)
     {
@@ -23,6 +24,7 @@ public struct MeshDataPoints
         edgePoints = new List<Vector3>();
         fencePointsLeft = new List<Vector3>();
         fencePointsRight = new List<Vector3>();
+        chairLiftSpawn = new Vector3();
     }
 }
 
@@ -220,6 +222,11 @@ public class HillMeshGeneration : MonoBehaviour
                             obstacleSpawnPoints[1] = temp;
                         }
 
+                        if (x==2)
+                        {
+                             meshDataPoints.chairLiftSpawn = temp;
+                        }
+
                         meshDataPoints.playerTrackMiddle.Add(temp);
                         if (x==xSize-1 && GameManager.Instance.playerTrackMiddleZ == 0.0)
                         {
@@ -270,11 +277,14 @@ public class HillMeshGeneration : MonoBehaviour
         meshCollider.sharedMesh = mesh;
         CreateMeshTriggers();
         gameObject.layer = LayerMask.NameToLayer("Ground");
-        Debug.Log($"Terrain Count: {GameManager.Instance.terrainCount}");
-        if (prevMesh != null && GameManager.Instance.terrainCount > 4)
+
+        if (prevMesh != null && GameManager.Instance.terrainCount > 2)
         {
-            Debug.Log($"Terrain Count: {GameManager.Instance.terrainCount}");
             ObstacleManager.Instance.InstantiateObstacles(gameObject.transform, obstacleSpawnPoints);
+        }
+        if (prevMesh != null && (GameManager.Instance.terrainCount % 2 == 0))
+        {
+            ObstacleManager.Instance.InstantiatePillar(gameObject.transform, meshDataPoints.chairLiftSpawn);
         }
         
     }
@@ -323,6 +333,8 @@ public class HillMeshGeneration : MonoBehaviour
                 Gizmos.DrawSphere(meshDataPoints.fencePointsRight[i], 0.1f);
             }
 
+            Gizmos.color = Color.green;
+            Gizmos.DrawSphere(meshDataPoints.chairLiftSpawn, 0.1f);
         }
     }
 

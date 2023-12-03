@@ -48,16 +48,11 @@ public class HillMeshInstantiator : MonoBehaviour
 
     IEnumerator GenerateMesh(HillMeshGeneration script)
     {
-        // Wait for a frame to ensure that the prefab is initialized
         yield return new WaitForEndOfFrame();
-
         script.CreateShape();
         script.UpdateMesh();
         GameManager.Instance.terrainCount++;
-        //startVertices = script.endVertices;
         InstantiateEdgePrefabs(script);
-        //ObstacleManager.Instance.GenerateObstacles(script);
-
     }
 
 
@@ -94,10 +89,25 @@ public class HillMeshInstantiator : MonoBehaviour
 
     public void OnMeshTriggerInstantiate(HillMeshGeneration script)
     {
-        Destroy(script.prevMesh.gameObject);
+        if (GameManager.Instance.terrainCount % 2 == 0)
+        {
+            StartCoroutine(WaitToDestroy(script.prevMesh.gameObject));
+        }
+        else
+        {
+            Destroy(script.prevMesh.gameObject);
+        }
         CreateSlope();
     }
 
+
+    IEnumerator WaitToDestroy(GameObject GO) 
+    {
+
+        yield return new WaitForSeconds(2f);
+        Destroy(GO);
+    }
 }
+
 
 

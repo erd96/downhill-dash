@@ -7,6 +7,8 @@ TagManager:
   - Obstacle
   - Osbtacle3Z
   - Obstacle1Z
+  - Boulder
+  - Rail
   layers:
   - Default
   - TransparentFX
