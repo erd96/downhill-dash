@@ -10,7 +10,8 @@ public class SkiRail : MonoBehaviour
 
     private void Awake()
     {
-        player = GameObject.FindWithTag("Player").transform;
+        //player = GameObject.FindWithTag("Player").transform;
+        player = PlayerController.Instance.transform;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -23,14 +24,17 @@ public class SkiRail : MonoBehaviour
         }
     }
 
+
     private void OnTriggerExit(Collider other)
     {
         if (other.transform.CompareTag("Player") && isOnRail)
         {
             StartCoroutine(RotatePlayer(-randomRotation));
         }
+        player.GetComponent<Animator>().SetBool("IsOnRail", false);
     }
 
+    
     private IEnumerator RotatePlayer(float targetAngle)
     {
         float elapsedRotationTime = 0f;

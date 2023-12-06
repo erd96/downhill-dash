@@ -10,20 +10,6 @@ public class HillMeshInstantiator : MonoBehaviour
     public GameObject[] treePrefabs;
     public GameObject[] fencePrefabs;
 
-    private void Awake()
-    {
-        GameManager.OnGameStateChange += GMStateChange;  // Subscribe to the OnGameStateChange event from the GameManager
-    }
-
-    private void OnDestroy()
-    {
-        GameManager.OnGameStateChange -= GMStateChange; // Unsubscribe to the OnGameStateChange when GO is destroyed to prevent memory leaks.
-    }
-
-    private void GMStateChange(GameState state)
-    {
-
-    }
 
     private void Start()
     {
@@ -62,7 +48,7 @@ public class HillMeshInstantiator : MonoBehaviour
         {
             int randTree = Random.Range(0, treePrefabs.Length);
             Vector3 position = new Vector3(script.meshDataPoints.edgePoints[i].x, script.meshDataPoints.edgePoints[i].y, script.meshDataPoints.edgePoints[i].z + Random.Range(-0.2f, 0.2f));
-            GameObject tree = Instantiate(treePrefabs[randTree], position, Quaternion.identity, script.transform);
+            GameObject tree = Instantiate(treePrefabs[randTree], position, treePrefabs[randTree].transform.rotation, script.transform);
         }
 
         for (int j = 0; j < script.meshDataPoints.fencePointsLeft.Count; j++)

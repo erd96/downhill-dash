@@ -5,7 +5,10 @@ using TMPro;
 
 public class MenuManager : MonoBehaviour
 {
+    //[SerializeField] GameObject LevelLoader;
     private AudioSource menuSelectSound;
+    [SerializeField] GameObject LevelLoader;
+    [SerializeField] GameObject ParticleEffect;
     private void Awake()
     {
         menuSelectSound = this.GetComponent<AudioSource>();
@@ -36,4 +39,10 @@ public class MenuManager : MonoBehaviour
         }
     }
 
+    public void StartGame()
+    {
+        ParticleEffect.SetActive(false);
+        LevelLoader.SetActive(true);
+        SceneLoader.Instance.LoadGameScene();
+    }
 }

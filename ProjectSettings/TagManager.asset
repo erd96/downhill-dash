@@ -9,6 +9,7 @@ TagManager:
   - Obstacle1Z
   - Boulder
   - Rail
+  - Slope
   layers:
   - Default
   - TransparentFX

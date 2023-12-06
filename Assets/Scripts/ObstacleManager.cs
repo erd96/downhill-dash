@@ -1,17 +1,12 @@
-using System.Linq;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
+
 
 public class ObstacleManager : MonoBehaviour
 {
     public static ObstacleManager Instance;
     [SerializeField] GameObject[] obstaclePrefabs; // Reference to your obstacle prefab
     [SerializeField] GameObject pillarPrefab;
-
-    public float minObstacleDistance = 1.0f; // Minimum distance between obstacles
-    public int obstacleDensity = 5;
+    private GameObject prevPrefab = null;
 
     private void Awake()
     {
@@ -24,9 +19,14 @@ public class ObstacleManager : MonoBehaviour
         Vector3 spawnPoint;
         GameObject randomObstacle = obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)];
 
-        if (randomObstacle.CompareTag("Obstacle1Z") || randomObstacle.CompareTag("Rail")) spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
-        else spawnPoint = spawnPoints[1];
-        Instantiate(randomObstacle, spawnPoint, randomObstacle.transform.rotation, parent);
+        if (randomObstacle.CompareTag("Obstacle1Z") || randomObstacle.CompareTag("Rail")) 
+        {
+            if (GameManager.Instance.terrainCount % 2 == 0) spawnPoints = new Vector3[] { spawnPoints[0], spawnPoints[2] };
+            spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
+        } 
+        else spawnPoint = spawnPoints[1];  // Obstacle3Z
+
+        prevPrefab =  Instantiate(randomObstacle, spawnPoint, randomObstacle.transform.rotation, parent);
     }
 
 
